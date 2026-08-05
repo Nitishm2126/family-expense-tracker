@@ -1,0 +1,17 @@
+.dart_tool/
+.packages
+build/
+.flutter-plugins
+.flutter-plugins-dependencies
+.pub-cache/
+.pub/
+/pubspec.lock
+*.iml
+*.ipr
+*.iws
+.idea/
+android/local.properties
+android/.gradle/
+android/app/debug
+android/app/profile
+android/app/release
