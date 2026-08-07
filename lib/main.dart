@@ -29,3 +29,4 @@ class FamilyExpenseTrackerApp extends ConsumerWidget {
     );
   }
 }
+

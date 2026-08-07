@@ -79,7 +79,7 @@ class _PasswordScreenState extends ConsumerState<PasswordScreen> {
               Text(
                 'Enter the family password to continue to ${AppConstants.appName}',
                 style: AppTextStyles.body(
-                    Theme.of(context).colorScheme.onSurface.withOpacity(0.6)),
+                    Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6)),
               ),
               const SizedBox(height: 36),
               Form(
@@ -111,7 +111,7 @@ class _PasswordScreenState extends ConsumerState<PasswordScreen> {
                   child: Text(
                     'Forgot password? Ask a family member',
                     style: AppTextStyles.caption(
-                        Theme.of(context).colorScheme.onSurface.withOpacity(0.4)),
+                        Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.4)),
                   ),
                 ),
               ),
@@ -139,3 +139,4 @@ class _PasswordScreenState extends ConsumerState<PasswordScreen> {
     );
   }
 }
+

@@ -65,7 +65,7 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
                     width: 96,
                     height: 96,
                     decoration: BoxDecoration(
-                      color: Colors.white.withOpacity(0.15),
+                      color: Colors.white.withValues(alpha: 0.15),
                       borderRadius: BorderRadius.circular(28),
                     ),
                     child: const Icon(
@@ -83,7 +83,7 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
                   const SizedBox(height: 8),
                   Text(
                     AppConstants.appTagline,
-                    style: AppTextStyles.body(Colors.white.withOpacity(0.85)),
+                    style: AppTextStyles.body(Colors.white.withValues(alpha: 0.85)),
                   ),
                 ],
               ),
@@ -94,3 +94,5 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
     );
   }
 }
+// ignore_for_file: deprecated_member_use
+

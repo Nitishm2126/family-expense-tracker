@@ -205,7 +205,7 @@ class _SummaryTile extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(label, style: AppTextStyles.caption(theme.colorScheme.onSurface.withOpacity(0.6))),
+          Text(label, style: AppTextStyles.caption(theme.colorScheme.onSurface.withValues(alpha: 0.6))),
           const SizedBox(height: 6),
           Text(Formatters.currency(amount), style: AppTextStyles.amountMedium(color)),
         ],
@@ -213,3 +213,4 @@ class _SummaryTile extends StatelessWidget {
     );
   }
 }
+

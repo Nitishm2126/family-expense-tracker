@@ -65,3 +65,4 @@ class AppColors {
 
   static const Color shadow = Color(0x1F6C4CF0);
 }
+

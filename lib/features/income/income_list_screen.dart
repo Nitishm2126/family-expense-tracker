@@ -80,7 +80,7 @@ class _IncomeListScreenState extends ConsumerState<IncomeListScreen> {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text('Total Income',
-                    style: AppTextStyles.caption(theme.colorScheme.onSurface.withOpacity(0.6))),
+                    style: AppTextStyles.caption(theme.colorScheme.onSurface.withValues(alpha: 0.6))),
                 Text(Formatters.currency(state.total),
                     style: AppTextStyles.bodyMedium(AppColors.income)),
               ],
@@ -121,7 +121,7 @@ class _IncomeListScreenState extends ConsumerState<IncomeListScreen> {
                                 alignment: Alignment.centerRight,
                                 padding: const EdgeInsets.only(right: 20),
                                 decoration: BoxDecoration(
-                                  color: AppColors.danger.withOpacity(0.12),
+                                  color: AppColors.danger.withValues(alpha: 0.12),
                                   borderRadius: BorderRadius.circular(16),
                                 ),
                                 child: const Icon(Icons.delete_rounded, color: AppColors.danger),
@@ -146,7 +146,7 @@ class _IncomeListScreenState extends ConsumerState<IncomeListScreen> {
                                       Container(
                                         padding: const EdgeInsets.all(10),
                                         decoration: BoxDecoration(
-                                          color: color.withOpacity(0.12),
+                                          color: color.withValues(alpha: 0.12),
                                           borderRadius: BorderRadius.circular(14),
                                         ),
                                         child: Icon(
@@ -172,7 +172,7 @@ class _IncomeListScreenState extends ConsumerState<IncomeListScreen> {
                                             Text(
                                               '${income.receivedBy} · ${Formatters.relativeDay(income.date)}',
                                               style: AppTextStyles.caption(
-                                                  theme.colorScheme.onSurface.withOpacity(0.55)),
+                                                  theme.colorScheme.onSurface.withValues(alpha: 0.55)),
                                             ),
                                           ],
                                         ),
@@ -195,3 +195,4 @@ class _IncomeListScreenState extends ConsumerState<IncomeListScreen> {
     );
   }
 }
+

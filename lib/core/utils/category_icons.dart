@@ -41,3 +41,4 @@ class CategoryIcons {
     return AppColors.categoryPalette[index];
   }
 }
+

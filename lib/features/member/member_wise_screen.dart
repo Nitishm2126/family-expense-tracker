@@ -37,7 +37,7 @@ class MemberWiseScreen extends ConsumerWidget {
       body: ListView(
         padding: const EdgeInsets.fromLTRB(16, 8, 16, 32),
         children: [
-          Text(Formatters.monthYear(now), style: AppTextStyles.caption(theme.colorScheme.onSurface.withOpacity(0.6))),
+          Text(Formatters.monthYear(now), style: AppTextStyles.caption(theme.colorScheme.onSurface.withValues(alpha: 0.6))),
           const SizedBox(height: 16),
           ...entries.map((entry) {
             final progress = maxAmount == 0 ? 0.0 : entry.value / maxAmount;
@@ -63,7 +63,7 @@ class MemberWiseScreen extends ConsumerWidget {
                             Text(entry.key, style: AppTextStyles.bodyMedium(theme.colorScheme.onSurface)),
                             const SizedBox(height: 2),
                             Text('${share.toStringAsFixed(0)}% of total spend',
-                                style: AppTextStyles.caption(theme.colorScheme.onSurface.withOpacity(0.55))),
+                                style: AppTextStyles.caption(theme.colorScheme.onSurface.withValues(alpha: 0.55))),
                           ],
                         ),
                       ),
@@ -79,7 +79,7 @@ class MemberWiseScreen extends ConsumerWidget {
                     child: LinearProgressIndicator(
                       value: progress.clamp(0.0, 1.0),
                       minHeight: 8,
-                      backgroundColor: AppColors.primary.withOpacity(0.1),
+                      backgroundColor: AppColors.primary.withValues(alpha: 0.1),
                       valueColor: const AlwaysStoppedAnimation(AppColors.primary),
                     ),
                   ),
@@ -92,3 +92,4 @@ class MemberWiseScreen extends ConsumerWidget {
     );
   }
 }
+

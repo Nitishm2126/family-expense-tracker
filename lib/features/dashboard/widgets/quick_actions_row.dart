@@ -56,15 +56,16 @@ class _QuickAction extends StatelessWidget {
           Container(
             padding: const EdgeInsets.all(14),
             decoration: BoxDecoration(
-              color: color.withOpacity(0.12),
+              color: color.withValues(alpha: 0.12),
               borderRadius: BorderRadius.circular(18),
             ),
             child: Icon(icon, color: color, size: 24),
           ),
           const SizedBox(height: 6),
-          Text(label, style: AppTextStyles.caption(theme.colorScheme.onSurface.withOpacity(0.75))),
+          Text(label, style: AppTextStyles.caption(theme.colorScheme.onSurface.withValues(alpha: 0.75))),
         ],
       ),
     );
   }
 }
+

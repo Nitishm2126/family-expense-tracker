@@ -82,7 +82,7 @@ class IncomeController extends StateNotifier<IncomeState> {
     );
     try {
       final api = ref.read(apiServiceProvider);
-      final serverData = await api.addIncome(income.toJson());
+      await api.addIncome(income.toJson());
       // Reload from backend so list reflects exactly what the server has.
       await loadIncomes();
       ref.read(dashboardControllerProvider.notifier).loadDashboard();
@@ -124,3 +124,4 @@ class IncomeController extends StateNotifier<IncomeState> {
 
 final incomeControllerProvider =
     StateNotifierProvider<IncomeController, IncomeState>((ref) => IncomeController(ref));
+

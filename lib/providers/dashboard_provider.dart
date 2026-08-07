@@ -59,3 +59,4 @@ final dashboardSummaryProvider = Provider<DashboardSummaryModel>((ref) {
 final isDashboardLoadingProvider = Provider<bool>((ref) {
   return ref.watch(dashboardControllerProvider).isLoading;
 });
+

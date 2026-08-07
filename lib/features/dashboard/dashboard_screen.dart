@@ -49,7 +49,7 @@ class DashboardScreen extends ConsumerWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text('Total Balance',
-                            style: AppTextStyles.body(Colors.white.withOpacity(0.85))),
+                            style: AppTextStyles.body(Colors.white.withValues(alpha: 0.85))),
                         const SizedBox(height: 6),
                         Text(
                           Formatters.currency(summary.balance),
@@ -168,7 +168,7 @@ class _HeroMetric extends StatelessWidget {
         Container(
           padding: const EdgeInsets.all(6),
           decoration: BoxDecoration(
-            color: Colors.white.withOpacity(0.18),
+            color: Colors.white.withValues(alpha: 0.18),
             shape: BoxShape.circle,
           ),
           child: Icon(icon, color: Colors.white, size: 16),
@@ -178,7 +178,7 @@ class _HeroMetric extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(label, style: AppTextStyles.caption(Colors.white.withOpacity(0.8))),
+              Text(label, style: AppTextStyles.caption(Colors.white.withValues(alpha: 0.8))),
               Text(
                 Formatters.currency(amount),
                 style: AppTextStyles.amountMedium(Colors.white),
@@ -192,3 +192,4 @@ class _HeroMetric extends StatelessWidget {
     );
   }
 }
+

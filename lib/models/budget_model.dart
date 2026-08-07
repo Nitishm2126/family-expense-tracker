@@ -57,3 +57,4 @@ class BudgetModel extends Equatable {
   @override
   List<Object?> get props => [category, limit, spent, month];
 }
+

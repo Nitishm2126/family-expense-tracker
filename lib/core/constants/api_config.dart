@@ -34,3 +34,4 @@ class ApiConfig {
   static const String actionGetSettings = 'getSettings';
   static const String actionUpdateSettings = 'updateSettings';
 }
+

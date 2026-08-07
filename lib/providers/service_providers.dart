@@ -9,3 +9,4 @@ final apiServiceProvider = Provider<ApiService>((ref) => ApiService());
 final authServiceProvider = Provider<AuthService>((ref) {
   return AuthService(ref.watch(apiServiceProvider));
 });
+

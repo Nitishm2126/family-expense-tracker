@@ -29,7 +29,7 @@ class EmptyStateWidget extends StatelessWidget {
             Container(
               padding: const EdgeInsets.all(20),
               decoration: BoxDecoration(
-                color: AppColors.primary.withOpacity(0.08),
+                color: AppColors.primary.withValues(alpha: 0.08),
                 shape: BoxShape.circle,
               ),
               child: Icon(icon, size: 44, color: AppColors.primary),
@@ -40,7 +40,7 @@ class EmptyStateWidget extends StatelessWidget {
             Text(
               subtitle,
               textAlign: TextAlign.center,
-              style: AppTextStyles.body(theme.colorScheme.onSurface.withOpacity(0.6)),
+              style: AppTextStyles.body(theme.colorScheme.onSurface.withValues(alpha: 0.6)),
             ),
           ],
         ),
@@ -98,7 +98,7 @@ class ErrorStateWidget extends StatelessWidget {
             Text(
               message,
               textAlign: TextAlign.center,
-              style: AppTextStyles.body(theme.colorScheme.onSurface.withOpacity(0.7)),
+              style: AppTextStyles.body(theme.colorScheme.onSurface.withValues(alpha: 0.7)),
             ),
             const SizedBox(height: 16),
             TextButton.icon(
@@ -112,3 +112,4 @@ class ErrorStateWidget extends StatelessWidget {
     );
   }
 }
+

@@ -62,3 +62,4 @@ class AppConstants {
 
   // Category icon/color mapping keys are handled in app_icons.dart
 }
+

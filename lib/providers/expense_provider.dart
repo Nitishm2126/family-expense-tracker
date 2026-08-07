@@ -91,10 +91,10 @@ class ExpenseController extends StateNotifier<ExpenseState> {
     );
     try {
       final api = ref.read(apiServiceProvider);
-      final serverData = await api.addExpense(expense.toJson());
-      // Use backend-assigned ID if available.
-      final serverId = serverData['Id']?.toString() ?? serverData['id']?.toString() ?? localId;
-      final savedExpense = expense.copyWith(id: serverId);
+      await api.addExpense(expense.toJson());
+      // We don't use serverId anymore, so just let the backend handle it.
+
+
       // Reload from backend so list reflects exactly what the server has.
       await loadExpenses();
       ref.read(dashboardControllerProvider.notifier).loadDashboard();
@@ -140,3 +140,4 @@ class ExpenseController extends StateNotifier<ExpenseState> {
 
 final expenseControllerProvider =
     StateNotifierProvider<ExpenseController, ExpenseState>((ref) => ExpenseController(ref));
+

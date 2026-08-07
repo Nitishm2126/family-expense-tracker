@@ -21,7 +21,7 @@ class MemberAvatar extends StatelessWidget {
     final color = CategoryIcons.colorFor(name);
     return CircleAvatar(
       radius: radius,
-      backgroundColor: color.withOpacity(0.15),
+      backgroundColor: color.withValues(alpha: 0.15),
       child: Text(
         _initials,
         style: TextStyle(
@@ -33,3 +33,4 @@ class MemberAvatar extends StatelessWidget {
     );
   }
 }
+

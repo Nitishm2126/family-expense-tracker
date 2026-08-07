@@ -42,13 +42,13 @@ class StatCard extends StatelessWidget {
           Container(
             padding: const EdgeInsets.all(8),
             decoration: BoxDecoration(
-              color: accentColor.withOpacity(0.12),
+              color: accentColor.withValues(alpha: 0.12),
               borderRadius: BorderRadius.circular(12),
             ),
             child: Icon(icon, color: accentColor, size: 20),
           ),
           const SizedBox(height: 12),
-          Text(label, style: AppTextStyles.caption(theme.colorScheme.onSurface.withOpacity(0.6))),
+          Text(label, style: AppTextStyles.caption(theme.colorScheme.onSurface.withValues(alpha: 0.6))),
           const SizedBox(height: 4),
           Text(
             Formatters.currency(amount),
@@ -61,3 +61,4 @@ class StatCard extends StatelessWidget {
     );
   }
 }
+

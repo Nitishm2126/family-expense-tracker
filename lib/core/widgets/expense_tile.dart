@@ -33,7 +33,7 @@ class ExpenseTile extends StatelessWidget {
             Container(
               padding: const EdgeInsets.all(10),
               decoration: BoxDecoration(
-                color: color.withOpacity(0.12),
+                color: color.withValues(alpha: 0.12),
                 borderRadius: BorderRadius.circular(14),
               ),
               child: Icon(CategoryIcons.expenseIcon(expense.category), color: color, size: 22),
@@ -52,7 +52,7 @@ class ExpenseTile extends StatelessWidget {
                   const SizedBox(height: 2),
                   Text(
                     '${expense.member} · ${Formatters.relativeDay(expense.date)}',
-                    style: AppTextStyles.caption(theme.colorScheme.onSurface.withOpacity(0.55)),
+                    style: AppTextStyles.caption(theme.colorScheme.onSurface.withValues(alpha: 0.55)),
                   ),
                 ],
               ),
@@ -79,7 +79,7 @@ class ExpenseTile extends StatelessWidget {
         alignment: Alignment.centerRight,
         padding: const EdgeInsets.only(right: 20),
         decoration: BoxDecoration(
-          color: AppColors.danger.withOpacity(0.12),
+          color: AppColors.danger.withValues(alpha: 0.12),
           borderRadius: BorderRadius.circular(16),
         ),
         child: const Icon(Icons.delete_rounded, color: AppColors.danger),
@@ -88,3 +88,4 @@ class ExpenseTile extends StatelessWidget {
     );
   }
 }
+

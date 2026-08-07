@@ -141,7 +141,7 @@ class _ExpenseListScreenState extends ConsumerState<ExpenseListScreen> {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text('${filtered.length} transactions',
-                    style: AppTextStyles.caption(theme.colorScheme.onSurface.withOpacity(0.6))),
+                    style: AppTextStyles.caption(theme.colorScheme.onSurface.withValues(alpha: 0.6))),
                 Text('Total: ${Formatters.currency(total)}',
                     style: AppTextStyles.bodyMedium(AppColors.expense)),
               ],
@@ -310,3 +310,4 @@ class _FilterSortSheetState extends State<_FilterSortSheet> {
     );
   }
 }
+

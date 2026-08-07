@@ -100,3 +100,4 @@ class ExpenseModel extends Equatable {
   List<Object?> get props =>
       [id, member, category, description, amount, paymentMode, date, time, remarks];
 }
+

@@ -16,7 +16,7 @@ class SettingsScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final settings = ref.watch(settingsControllerProvider);
     final controller = ref.read(settingsControllerProvider.notifier);
-    final theme = Theme.of(context);
+
 
     return Scaffold(
       appBar: AppBar(title: const Text('Settings')),
@@ -293,16 +293,18 @@ class _SettingsTile extends StatelessWidget {
       leading: Container(
         padding: const EdgeInsets.all(8),
         decoration: BoxDecoration(
-          color: AppColors.primary.withOpacity(0.1),
+          color: AppColors.primary.withValues(alpha: 0.1),
           borderRadius: BorderRadius.circular(10),
         ),
         child: Icon(icon, color: AppColors.primary, size: 20),
       ),
       title: Text(title, style: AppTextStyles.bodyMedium(theme.colorScheme.onSurface)),
       subtitle: subtitle != null
-          ? Text(subtitle!, style: AppTextStyles.caption(theme.colorScheme.onSurface.withOpacity(0.55)))
+          ? Text(subtitle!, style: AppTextStyles.caption(theme.colorScheme.onSurface.withValues(alpha: 0.55)))
           : null,
       trailing: trailing ?? const Icon(Icons.chevron_right_rounded),
     );
   }
 }
+// ignore_for_file: deprecated_member_use, unused_local_variable
+

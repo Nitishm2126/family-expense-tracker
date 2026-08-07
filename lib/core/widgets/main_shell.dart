@@ -47,7 +47,7 @@ class MainShell extends StatelessWidget {
           shape: BoxShape.circle,
           boxShadow: [
             BoxShadow(
-              color: AppColors.primary.withOpacity(0.4),
+              color: AppColors.primary.withValues(alpha: 0.4),
               blurRadius: 16,
               offset: const Offset(0, 6),
             ),
@@ -118,7 +118,7 @@ class _NavItem extends StatelessWidget {
   Widget build(BuildContext context) {
     final color = selected
         ? AppColors.primary
-        : Theme.of(context).colorScheme.onSurface.withOpacity(0.5);
+        : Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.5);
     return InkWell(
       onTap: onTap,
       borderRadius: BorderRadius.circular(12),
@@ -136,3 +136,4 @@ class _NavItem extends StatelessWidget {
     );
   }
 }
+

@@ -97,3 +97,4 @@ class _CategoryPieChartState extends State<CategoryPieChart> {
     );
   }
 }
+

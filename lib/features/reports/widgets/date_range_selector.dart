@@ -73,7 +73,7 @@ class DateRangeSelector extends StatelessWidget {
                 child: Text(
                   entry.value,
                   style: TextStyle(
-                    color: isSelected ? Colors.white : theme.colorScheme.onSurface.withOpacity(0.6),
+                    color: isSelected ? Colors.white : theme.colorScheme.onSurface.withValues(alpha: 0.6),
                     fontWeight: FontWeight.w600,
                     fontSize: 13,
                   ),
@@ -86,3 +86,4 @@ class DateRangeSelector extends StatelessWidget {
     );
   }
 }
+

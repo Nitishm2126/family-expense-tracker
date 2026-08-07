@@ -18,3 +18,4 @@ final categoriesProvider = FutureProvider<List<String>>((ref) async {
     return AppConstants.expenseCategories;
   }
 });
+

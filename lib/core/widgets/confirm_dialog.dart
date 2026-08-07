@@ -32,3 +32,4 @@ Future<bool> showConfirmDialog(
   );
   return result ?? false;
 }
+

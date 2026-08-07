@@ -66,7 +66,7 @@ class BudgetScreen extends ConsumerWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text('Overall Monthly Budget',
-                            style: AppTextStyles.captionMedium(theme.colorScheme.onSurface.withOpacity(0.6))),
+                            style: AppTextStyles.captionMedium(theme.colorScheme.onSurface.withValues(alpha: 0.6))),
                         const SizedBox(height: 8),
                         Row(
                           crossAxisAlignment: CrossAxisAlignment.end,
@@ -76,7 +76,7 @@ class BudgetScreen extends ConsumerWidget {
                             Padding(
                               padding: const EdgeInsets.only(bottom: 4),
                               child: Text('/ ${Formatters.currency(totalLimit)}',
-                                  style: AppTextStyles.body(theme.colorScheme.onSurface.withOpacity(0.5))),
+                                  style: AppTextStyles.body(theme.colorScheme.onSurface.withValues(alpha: 0.5))),
                             ),
                           ],
                         ),
@@ -86,7 +86,7 @@ class BudgetScreen extends ConsumerWidget {
                           child: LinearProgressIndicator(
                             value: totalLimit == 0 ? 0 : (totalSpent / totalLimit).clamp(0.0, 1.0),
                             minHeight: 10,
-                            backgroundColor: AppColors.primary.withOpacity(0.1),
+                            backgroundColor: AppColors.primary.withValues(alpha: 0.1),
                             valueColor: AlwaysStoppedAnimation(
                               totalSpent > totalLimit ? AppColors.danger : AppColors.primary,
                             ),
@@ -133,7 +133,7 @@ class BudgetScreen extends ConsumerWidget {
                                 Text(budget.category, style: AppTextStyles.bodyMedium(theme.colorScheme.onSurface)),
                                 Text(
                                   '${Formatters.currency(budget.spent)} / ${Formatters.currency(budget.limit)}',
-                                  style: AppTextStyles.captionMedium(theme.colorScheme.onSurface.withOpacity(0.7)),
+                                  style: AppTextStyles.captionMedium(theme.colorScheme.onSurface.withValues(alpha: 0.7)),
                                 ),
                               ],
                             ),
@@ -143,7 +143,7 @@ class BudgetScreen extends ConsumerWidget {
                               child: LinearProgressIndicator(
                                 value: budget.progress.clamp(0.0, 1.0),
                                 minHeight: 8,
-                                backgroundColor: color.withOpacity(0.1),
+                                backgroundColor: color.withValues(alpha: 0.1),
                                 valueColor: AlwaysStoppedAnimation(color),
                               ),
                             ),
@@ -226,7 +226,7 @@ class _SetBudgetSheetState extends ConsumerState<_SetBudgetSheet> {
           Text('Set Budget', style: AppTextStyles.title(Theme.of(context).colorScheme.onSurface)),
           const SizedBox(height: 16),
           DropdownButtonFormField<String>(
-            value: selectedCategory.isNotEmpty ? selectedCategory : null,
+            initialValue: selectedCategory.isNotEmpty ? selectedCategory : null,
             items: categories
                 .map((c) => DropdownMenuItem(value: c, child: Text(c)))
                 .toList(),
@@ -247,3 +247,4 @@ class _SetBudgetSheetState extends ConsumerState<_SetBudgetSheet> {
     );
   }
 }
+

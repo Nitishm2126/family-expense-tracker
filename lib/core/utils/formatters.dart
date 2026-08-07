@@ -41,3 +41,4 @@ class Formatters {
 
   static String isoDate(DateTime date) => DateFormat('yyyy-MM-dd').format(date);
 }
+

@@ -80,3 +80,4 @@ class IncomeModel extends Equatable {
   List<Object?> get props =>
       [id, receivedBy, source, description, amount, date];
 }
+

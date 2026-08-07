@@ -1,4 +1,3 @@
-import 'dart:convert';
 import 'package:http/http.dart' as http;
 
 /// A custom http.Client that handles Google Apps Script POST redirects.
@@ -20,3 +19,4 @@ class GasHttpClient extends http.BaseClient {
     _inner.close();
   }
 }
+
