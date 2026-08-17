@@ -6,6 +6,7 @@ import '../../core/theme/app_text_styles.dart';
 import '../../core/utils/formatters.dart';
 import '../../core/widgets/member_avatar.dart';
 import '../../providers/expense_provider.dart';
+import '../../core/widgets/app_footer.dart';
 
 /// Shows how much each family member has spent this month, ranked
 /// highest to lowest, with a progress bar relative to the top spender.
@@ -87,6 +88,8 @@ class MemberWiseScreen extends ConsumerWidget {
               ),
             );
           }),
+          const SizedBox(height: 12),
+          const AppFooter(),
         ],
       ),
     );

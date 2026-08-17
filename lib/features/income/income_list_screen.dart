@@ -9,6 +9,7 @@ import '../../core/widgets/state_widgets.dart';
 import '../../models/income_model.dart';
 import '../../providers/income_provider.dart';
 import 'edit_income_sheet.dart';
+import '../../core/widgets/app_footer.dart';
 
 class IncomeListScreen extends ConsumerStatefulWidget {
   const IncomeListScreen({super.key});
@@ -105,9 +106,12 @@ class _IncomeListScreenState extends ConsumerState<IncomeListScreen> {
                         )
                       : ListView.separated(
                           padding: const EdgeInsets.fromLTRB(16, 0, 16, 100),
-                          itemCount: filtered.length,
+                          itemCount: filtered.length + 1,
                           separatorBuilder: (_, __) => const SizedBox(height: 10),
                           itemBuilder: (context, index) {
+                            if (index == filtered.length) {
+                              return const AppFooter();
+                            }
                             final income = filtered[index];
                             final color = CategoryIcons.colorFor(income.source);
                             return Dismissible(

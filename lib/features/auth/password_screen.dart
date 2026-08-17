@@ -6,6 +6,7 @@ import '../../core/theme/app_text_styles.dart';
 import '../../core/widgets/primary_button.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/service_providers.dart';
+import '../../core/widgets/app_footer.dart';
 
 class PasswordScreen extends ConsumerStatefulWidget {
   const PasswordScreen({super.key});
@@ -132,6 +133,8 @@ class _PasswordScreenState extends ConsumerState<PasswordScreen> {
                   ),
                 ),
               ],
+              const Spacer(),
+              const AppFooter(),
             ],
           ),
         ),

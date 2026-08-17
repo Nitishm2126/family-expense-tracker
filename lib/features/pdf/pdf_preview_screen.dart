@@ -22,11 +22,14 @@ class PdfPreviewScreen extends StatelessWidget {
     final List<ExpenseModel> expenses = (extra?['expenses'] as List?)?.cast<ExpenseModel>() ?? [];
     final List<IncomeModel> incomes = (extra?['incomes'] as List?)?.cast<IncomeModel>() ?? [];
 
+    final Map<String, double>? memberBreakdown = extra?['memberBreakdown'] as Map<String, double>?;
+
     Future<Uint8List> build(PdfPageFormat format) => PdfReportService.generateReport(
           rangeStart: range.start,
           rangeEnd: range.end,
           expenses: expenses,
           incomes: incomes,
+          memberBreakdown: memberBreakdown,
         );
 
     return Scaffold(

@@ -1,5 +1,5 @@
 import 'package:equatable/equatable.dart';
-
+import '../core/constants/app_constants.dart';
 /// Represents a single expense entry, mirroring one row in the
 /// "Expenses" Google Sheet.
 class ExpenseModel extends Equatable {
@@ -31,7 +31,26 @@ class ExpenseModel extends Equatable {
     // Backend GET returns PascalCase; POST body uses camelCase.
     // We handle both so fromJson works for both API responses and local cache.
     final id = (json['ExpenseID'] ?? json['id'] ?? '').toString();
-    final member = (json['MemberName'] ?? json['member'] ?? '').toString();
+    final rawMember = json['Paid By'] ?? json['PaidBy'] ?? json['paidBy'] ?? json['Member'] ?? json['MemberName'] ?? json['member'] ?? '';
+    final memberStr = rawMember.toString().trim();
+    
+    String resolvedMember = memberStr;
+    
+    // Check if it's a numeric ID
+    final memberId = int.tryParse(memberStr);
+    if (memberId != null && memberId >= 0 && memberId < AppConstants.familyMembers.length) {
+      resolvedMember = AppConstants.familyMembers[memberId];
+    } else {
+      // Case-insensitive match against known members
+      for (final m in AppConstants.familyMembers) {
+        if (m.toLowerCase() == memberStr.toLowerCase()) {
+          resolvedMember = m;
+          break;
+        }
+      }
+    }
+    
+    final member = memberStr.isEmpty ? 'Unknown' : resolvedMember;
     final category = (json['Category'] ?? json['category'] ?? 'Others').toString();
     final description = (json['Description'] ?? json['description'] ?? '').toString();
     final amount = double.tryParse((json['Amount'] ?? json['amount'] ?? 0).toString()) ?? 0.0;

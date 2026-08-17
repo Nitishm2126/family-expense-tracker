@@ -11,6 +11,7 @@ import '../../models/expense_model.dart';
 import '../../providers/category_provider.dart';
 import '../../providers/expense_provider.dart';
 import 'edit_expense_sheet.dart';
+import '../../core/widgets/app_footer.dart';
 
 enum ExpenseSort { newest, oldest, highest, lowest }
 
@@ -166,9 +167,12 @@ class _ExpenseListScreenState extends ConsumerState<ExpenseListScreen> {
                         )
                       : ListView.separated(
                           padding: const EdgeInsets.fromLTRB(16, 0, 16, 100),
-                          itemCount: filtered.length,
+                          itemCount: filtered.length + 1,
                           separatorBuilder: (_, __) => const SizedBox(height: 4),
                           itemBuilder: (context, index) {
+                            if (index == filtered.length) {
+                              return const AppFooter();
+                            }
                             final expense = filtered[index];
                             return ExpenseTile(
                               expense: expense,

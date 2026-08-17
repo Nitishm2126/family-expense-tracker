@@ -4,11 +4,13 @@ import 'package:go_router/go_router.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_text_styles.dart';
 import '../../core/utils/formatters.dart';
+import '../../core/constants/app_constants.dart';
 import '../../providers/expense_provider.dart';
 import '../../providers/income_provider.dart';
 import '../../routing/app_router.dart';
 import '../dashboard/widgets/category_pie_chart.dart';
 import 'widgets/date_range_selector.dart';
+import '../../core/widgets/app_footer.dart';
 
 enum ReportRange { daily, weekly, monthly, custom }
 
@@ -65,7 +67,9 @@ class _ReportsScreenState extends ConsumerState<ReportsScreen> {
       categoryBreakdown[e.category] = (categoryBreakdown[e.category] ?? 0) + e.amount;
     }
 
-    final Map<String, double> memberBreakdown = {};
+    final Map<String, double> memberBreakdown = {
+      for (final m in AppConstants.familyMembers) m: 0.0,
+    };
     for (final e in filteredExpenses) {
       memberBreakdown[e.member] = (memberBreakdown[e.member] ?? 0) + e.amount;
     }
@@ -156,6 +160,7 @@ class _ReportsScreenState extends ConsumerState<ReportsScreen> {
                     'range': range,
                     'expenses': filteredExpenses,
                     'incomes': filteredIncomes,
+                    'memberBreakdown': memberBreakdown,
                   }),
                   icon: const Icon(Icons.picture_as_pdf_rounded),
                   label: const Text('Download PDF'),
@@ -168,6 +173,7 @@ class _ReportsScreenState extends ConsumerState<ReportsScreen> {
                     'range': range,
                     'expenses': filteredExpenses,
                     'incomes': filteredIncomes,
+                    'memberBreakdown': memberBreakdown,
                     'shareDirectly': true,
                   }),
                   icon: const Icon(Icons.ios_share_rounded),
@@ -176,6 +182,8 @@ class _ReportsScreenState extends ConsumerState<ReportsScreen> {
               ),
             ],
           ),
+          const SizedBox(height: 20),
+          const AppFooter(),
         ],
       ),
     );

@@ -10,6 +10,7 @@ import '../../models/budget_model.dart';
 import '../../providers/budget_provider.dart';
 import '../../providers/category_provider.dart';
 import '../../providers/settings_provider.dart';
+import '../../core/widgets/app_footer.dart';
 
 class BudgetScreen extends ConsumerWidget {
   const BudgetScreen({super.key});
@@ -159,6 +160,7 @@ class BudgetScreen extends ConsumerWidget {
                       ),
                     );
                   }),
+                  const AppFooter(),
               ],
             ),
     );

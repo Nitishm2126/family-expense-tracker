@@ -8,6 +8,7 @@ import '../../core/widgets/primary_button.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/service_providers.dart';
 import '../../providers/settings_provider.dart';
+import '../../core/widgets/app_footer.dart';
 
 class SettingsScreen extends ConsumerWidget {
   const SettingsScreen({super.key});
@@ -120,6 +121,8 @@ class SettingsScreen extends ConsumerWidget {
               label: const Text('Logout'),
             ),
           ),
+          const SizedBox(height: 12),
+          const AppFooter(),
         ],
       ),
     );

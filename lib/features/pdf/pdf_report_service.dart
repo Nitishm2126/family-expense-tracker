@@ -5,6 +5,7 @@ import '../../core/constants/app_constants.dart';
 import '../../core/utils/formatters.dart';
 import '../../models/expense_model.dart';
 import '../../models/income_model.dart';
+import 'package:flutter/services.dart' show rootBundle;
 
 /// Builds the "Family Expense Tracker" PDF report: title, date range,
 /// a transactions table, category totals, member totals, and a footer.
@@ -16,8 +17,22 @@ class PdfReportService {
     required DateTime rangeEnd,
     required List<ExpenseModel> expenses,
     required List<IncomeModel> incomes,
+    Map<String, double>? memberBreakdown,
   }) async {
-    final doc = pw.Document();
+    final fontData = await rootBundle.load('assets/fonts/Roboto-Regular.ttf');
+    final fontBoldData = await rootBundle.load('assets/fonts/Roboto-Bold.ttf');
+    final logoData = await rootBundle.load('assets/images/logo.jpg');
+    final logoImage = pw.MemoryImage(logoData.buffer.asUint8List());
+    final ttf = pw.Font.ttf(fontData);
+    final ttfBold = pw.Font.ttf(fontBoldData);
+
+
+    final doc = pw.Document(
+      theme: pw.ThemeData.withFont(
+        base: ttf,
+        bold: ttfBold,
+      ),
+    );
 
     final totalIncome = incomes.fold<double>(0, (s, i) => s + i.amount);
     final totalExpense = expenses.fold<double>(0, (s, e) => s + e.amount);
@@ -27,11 +42,13 @@ class PdfReportService {
       categoryTotals[e.category] = (categoryTotals[e.category] ?? 0) + e.amount;
     }
 
-    final Map<String, double> memberTotals = {
+    final Map<String, double> memberTotals = memberBreakdown ?? {
       for (final m in AppConstants.familyMembers) m: 0.0,
     };
-    for (final e in expenses) {
-      memberTotals[e.member] = (memberTotals[e.member] ?? 0) + e.amount;
+    if (memberBreakdown == null) {
+      for (final e in expenses) {
+        memberTotals[e.member] = (memberTotals[e.member] ?? 0) + e.amount;
+      }
     }
 
     final sortedExpenses = [...expenses]..sort((a, b) => b.date.compareTo(a.date));
@@ -43,10 +60,18 @@ class PdfReportService {
         header: (context) => pw.Column(
           crossAxisAlignment: pw.CrossAxisAlignment.start,
           children: [
-            pw.Text(
-              AppConstants.appName.toUpperCase(),
-              style: pw.TextStyle(fontSize: 20, fontWeight: pw.FontWeight.bold),
+            pw.Row(
+              crossAxisAlignment: pw.CrossAxisAlignment.center,
+              children: [
+                pw.Image(logoImage, width: 28, height: 28),
+                pw.SizedBox(width: 8),
+                pw.Text(
+                  AppConstants.appName.toUpperCase(),
+                  style: pw.TextStyle(fontSize: 20, fontWeight: pw.FontWeight.bold),
+                ),
+              ],
             ),
+
             pw.SizedBox(height: 2),
             pw.Text('Expense Report', style: const pw.TextStyle(fontSize: 12, color: PdfColors.grey700)),
             pw.SizedBox(height: 6),
@@ -66,9 +91,18 @@ class PdfReportService {
             pw.Divider(),
             pw.Row(
               mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+              crossAxisAlignment: pw.CrossAxisAlignment.end,
               children: [
-                pw.Text('${AppConstants.appName} · Confidential Family Document',
-                    style: const pw.TextStyle(fontSize: 8, color: PdfColors.grey500)),
+                pw.Column(
+                  crossAxisAlignment: pw.CrossAxisAlignment.start,
+                  children: [
+                    pw.Text('${AppConstants.appName} · Confidential Family Document',
+                        style: const pw.TextStyle(fontSize: 8, color: PdfColors.grey500)),
+                    pw.SizedBox(height: 2),
+                    pw.Text('Designed and developed by Nitish',
+                        style: const pw.TextStyle(fontSize: 8, color: PdfColors.grey500)),
+                  ],
+                ),
                 pw.Text('Page ${context.pageNumber} of ${context.pagesCount}',
                     style: const pw.TextStyle(fontSize: 8, color: PdfColors.grey500)),
               ],

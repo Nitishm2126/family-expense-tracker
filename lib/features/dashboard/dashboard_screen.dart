@@ -12,6 +12,8 @@ import '../../providers/dashboard_provider.dart';
 import '../../providers/expense_provider.dart';
 import '../../providers/income_provider.dart';
 import '../../routing/app_router.dart';
+import '../../core/widgets/app_footer.dart';
+
 import 'widgets/category_pie_chart.dart';
 import 'widgets/quick_actions_row.dart';
 
@@ -147,8 +149,10 @@ class DashboardScreen extends ConsumerWidget {
                                 .toList(),
                           ),
                   ),
+                  const AppFooter(),
                 ],
               ),
+
       ),
     );
   }
