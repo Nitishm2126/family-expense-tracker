@@ -49,7 +49,7 @@ class IncomeController extends StateNotifier<IncomeState> {
     }
 
     try {
-      final api = ref.read(apiServiceProvider);
+      final api = ref.read(supabaseServiceProvider);
       final raw = await api.getIncomes();
       await LocalCacheService.cacheIncomes(raw);
       final list = raw.map(IncomeModel.fromJson).toList()
@@ -64,6 +64,7 @@ class IncomeController extends StateNotifier<IncomeState> {
   }
 
   Future<bool> addIncome({
+    String? memberId,
     required String receivedBy,
     required String source,
     required String description,
@@ -73,6 +74,7 @@ class IncomeController extends StateNotifier<IncomeState> {
     final localId = const Uuid().v4();
     final income = IncomeModel(
       id: localId,
+      memberId: memberId,
       receivedBy: receivedBy,
       source: source,
       description: description,
@@ -81,7 +83,7 @@ class IncomeController extends StateNotifier<IncomeState> {
       createdAt: DateTime.now(),
     );
     try {
-      final api = ref.read(apiServiceProvider);
+      final api = ref.read(supabaseServiceProvider);
       await api.addIncome(income.toJson());
       // Reload from backend so list reflects exactly what the server has.
       await loadIncomes();
@@ -95,7 +97,7 @@ class IncomeController extends StateNotifier<IncomeState> {
 
   Future<bool> updateIncome(IncomeModel updated) async {
     try {
-      final api = ref.read(apiServiceProvider);
+      final api = ref.read(supabaseServiceProvider);
       await api.updateIncome(updated.id, updated.toJson());
       await loadIncomes();
       ref.read(dashboardControllerProvider.notifier).loadDashboard();
@@ -110,7 +112,7 @@ class IncomeController extends StateNotifier<IncomeState> {
     final previous = state.incomes;
     state = state.copyWith(incomes: previous.where((i) => i.id != id).toList());
     try {
-      final api = ref.read(apiServiceProvider);
+      final api = ref.read(supabaseServiceProvider);
       await api.deleteIncome(id);
       await loadIncomes();
       ref.read(dashboardControllerProvider.notifier).loadDashboard();

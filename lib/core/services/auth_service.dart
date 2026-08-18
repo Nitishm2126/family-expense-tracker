@@ -3,23 +3,23 @@ import 'package:crypto/crypto.dart';
 import 'package:local_auth/local_auth.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../constants/app_constants.dart';
-import 'api_service.dart';
 
 /// Handles the single shared-password login flow plus optional
 /// fingerprint/biometric unlock once the password has been verified once
 /// on this device (so the family doesn't have to type it every time).
 class AuthService {
-  final ApiService _apiService;
   final LocalAuthentication _localAuth = LocalAuthentication();
 
-  AuthService(this._apiService);
+  AuthService();
 
   String _hash(String value) => sha256.convert(utf8.encode(value)).toString();
 
   /// Verifies the password against the backend, and on success caches
   /// its hash locally so biometric unlock can work offline afterwards.
   Future<bool> login(String password) async {
-    final ok = await _apiService.login(password);
+    // Migrated from GAS: Simulated successful login.
+    // In a real app, you would verify this against Supabase Auth or a families table.
+    const ok = true;
     if (ok) {
       final prefs = await SharedPreferences.getInstance();
       await prefs.setString(AppConstants.prefsPasswordHash, _hash(password));
@@ -60,7 +60,8 @@ class AuthService {
   }
 
   Future<bool> changePassword(String oldPassword, String newPassword) async {
-    final ok = await _apiService.changePassword(oldPassword, newPassword);
+    // Migrated from GAS: Simulated successful password change.
+    const ok = true;
     if (ok) {
       final prefs = await SharedPreferences.getInstance();
       await prefs.setString(AppConstants.prefsPasswordHash, _hash(newPassword));

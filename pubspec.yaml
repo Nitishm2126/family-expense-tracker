@@ -54,6 +54,8 @@ dependencies:
   uuid: ^4.4.0
   connectivity_plus: ^6.0.3
   fluttertoast: ^8.2.8
+  supabase_flutter: ^2.16.0
+  flutter_dotenv: ^6.0.1
 
 dev_dependencies:
   flutter_test:
@@ -71,6 +73,7 @@ flutter:
     - assets/fonts/Roboto-Regular.ttf
     - assets/fonts/Roboto-Bold.ttf
     - assets/images/logo.jpg
+    - .env
 
 flutter_launcher_icons:
   android: true

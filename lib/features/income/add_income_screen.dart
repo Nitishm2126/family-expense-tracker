@@ -5,6 +5,7 @@ import '../../core/utils/validators.dart';
 import '../../core/widgets/app_form_fields.dart';
 import '../../core/widgets/primary_button.dart';
 import '../../providers/income_provider.dart';
+import '../../providers/member_provider.dart';
 
 class AddIncomeScreen extends ConsumerStatefulWidget {
   const AddIncomeScreen({super.key});
@@ -18,7 +19,8 @@ class _AddIncomeScreenState extends ConsumerState<AddIncomeScreen> {
   final _descriptionController = TextEditingController();
   final _amountController = TextEditingController();
 
-  String? _receivedBy = AppConstants.familyMembers.first;
+  String? _memberId;
+  String? _receivedByName;
   String? _source = AppConstants.incomeSources.first;
   DateTime _date = DateTime.now();
   bool _isSaving = false;
@@ -35,7 +37,8 @@ class _AddIncomeScreenState extends ConsumerState<AddIncomeScreen> {
     setState(() => _isSaving = true);
 
     final success = await ref.read(incomeControllerProvider.notifier).addIncome(
-          receivedBy: _receivedBy!,
+          memberId: _memberId,
+          receivedBy: _receivedByName ?? 'Unknown',
           source: _source!,
           description: _descriptionController.text.trim(),
           amount: double.parse(_amountController.text.trim()),
@@ -59,6 +62,9 @@ class _AddIncomeScreenState extends ConsumerState<AddIncomeScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final membersAsync = ref.watch(membersProvider);
+    final members = membersAsync.value ?? [];
+
     return Scaffold(
       appBar: AppBar(title: const Text('Add Income')),
       body: Form(
@@ -66,13 +72,30 @@ class _AddIncomeScreenState extends ConsumerState<AddIncomeScreen> {
         child: ListView(
           padding: const EdgeInsets.fromLTRB(20, 12, 20, 32),
           children: [
-            AppDropdownField(
-              label: 'Received By',
-              value: _receivedBy,
-              items: AppConstants.familyMembers,
-              onChanged: (v) => setState(() => _receivedBy = v),
-              validator: (v) => Validators.required(v, field: 'Member'),
-            ),
+            if (members.isNotEmpty)
+              DropdownButtonFormField<String>(
+                decoration: InputDecoration(
+                  labelText: 'Received By',
+                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                  filled: true,
+                ),
+                value: _memberId,
+                items: members.map((m) {
+                  return DropdownMenuItem<String>(
+                    value: m['id'].toString(),
+                    child: Text(m['name'].toString()),
+                  );
+                }).toList(),
+                onChanged: (val) {
+                  setState(() {
+                    _memberId = val;
+                    _receivedByName = members.firstWhere((m) => m['id'].toString() == val)['name'].toString();
+                  });
+                },
+                validator: (v) => v == null ? 'Please select a member' : null,
+              )
+            else
+              const Center(child: CircularProgressIndicator()),
             const SizedBox(height: 18),
             AppTextField(
               label: 'Amount',

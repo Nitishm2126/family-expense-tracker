@@ -44,11 +44,11 @@ class DashboardSummaryModel {
         .toList();
 
     return DashboardSummaryModel(
-      totalIncome: double.tryParse(json['totalIncome'].toString()) ?? 0.0,
-      totalExpense: double.tryParse(json['totalExpense'].toString()) ?? 0.0,
-      balance: double.tryParse(json['balance'].toString()) ?? 0.0,
-      todayExpense: double.tryParse(json['todayExpense'].toString()) ?? 0.0,
-      monthExpense: double.tryParse((json['thisMonthExpense'] ?? json['monthExpense']).toString()) ?? 0.0,
+      totalIncome: double.tryParse((json['totalIncome'] ?? json['total_income']).toString()) ?? 0.0,
+      totalExpense: double.tryParse((json['totalExpense'] ?? json['total_expense']).toString()) ?? 0.0,
+      balance: double.tryParse((json['balance']).toString()) ?? 0.0,
+      todayExpense: double.tryParse((json['todayExpense'] ?? json['today_expense']).toString()) ?? 0.0,
+      monthExpense: double.tryParse((json['thisMonthExpense'] ?? json['month_expense'] ?? json['monthExpense']).toString()) ?? 0.0,
       categoryBreakdown: breakdown,
       recentExpenses: recent,
     );

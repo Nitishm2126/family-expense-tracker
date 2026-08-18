@@ -51,7 +51,7 @@ class ExpenseController extends StateNotifier<ExpenseState> {
     }
 
     try {
-      final api = ref.read(apiServiceProvider);
+      final api = ref.read(supabaseServiceProvider);
       final raw = await api.getExpenses();
       await LocalCacheService.cacheExpenses(raw);
       final list = raw.map(ExpenseModel.fromJson).toList()
@@ -66,6 +66,8 @@ class ExpenseController extends StateNotifier<ExpenseState> {
   }
 
   Future<bool> addExpense({
+    String? memberId,
+    String? categoryId,
     required String member,
     required String category,
     required String description,
@@ -79,6 +81,8 @@ class ExpenseController extends StateNotifier<ExpenseState> {
     final localId = const Uuid().v4();
     final expense = ExpenseModel(
       id: localId,
+      memberId: memberId,
+      categoryId: categoryId,
       member: member,
       category: category,
       description: description,
@@ -90,7 +94,7 @@ class ExpenseController extends StateNotifier<ExpenseState> {
       createdAt: DateTime.now(),
     );
     try {
-      final api = ref.read(apiServiceProvider);
+      final api = ref.read(supabaseServiceProvider);
       await api.addExpense(expense.toJson());
       // We don't use serverId anymore, so just let the backend handle it.
 
@@ -107,7 +111,7 @@ class ExpenseController extends StateNotifier<ExpenseState> {
 
   Future<bool> updateExpense(ExpenseModel updated) async {
     try {
-      final api = ref.read(apiServiceProvider);
+      final api = ref.read(supabaseServiceProvider);
       await api.updateExpense(updated.id, updated.toJson());
       // Reload from backend to reflect real state.
       await loadExpenses();
@@ -124,7 +128,7 @@ class ExpenseController extends StateNotifier<ExpenseState> {
     // Optimistically remove from local list.
     state = state.copyWith(expenses: previous.where((e) => e.id != id).toList());
     try {
-      final api = ref.read(apiServiceProvider);
+      final api = ref.read(supabaseServiceProvider);
       await api.deleteExpense(id);
       // Reload from backend to confirm deletion.
       await loadExpenses();

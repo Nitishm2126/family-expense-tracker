@@ -37,10 +37,14 @@ class DashboardController extends StateNotifier<DashboardState> {
   Future<void> loadDashboard() async {
     state = state.copyWith(isLoading: true, errorMessage: null);
     try {
-      final api = ref.read(apiServiceProvider);
-      final raw = await api.getDashboard();
-      final summary = DashboardSummaryModel.fromJson(raw);
-      state = state.copyWith(summary: summary, isLoading: false);
+      final api = ref.read(supabaseServiceProvider);
+      final raw = await api.getDashboardSummary();
+      if (raw != null) {
+        final summary = DashboardSummaryModel.fromJson(raw);
+        state = state.copyWith(summary: summary, isLoading: false);
+      } else {
+        state = state.copyWith(isLoading: false);
+      }
     } catch (e) {
       state = state.copyWith(isLoading: false, errorMessage: e.toString());
     }

@@ -3,6 +3,7 @@ import '../core/services/local_cache_service.dart';
 import '../core/utils/formatters.dart';
 import '../models/budget_model.dart';
 import 'expense_provider.dart';
+import 'service_providers.dart';
 
 class BudgetState {
   final Map<String, double> limits; // category -> monthly limit
@@ -42,15 +43,35 @@ class BudgetController extends StateNotifier<BudgetState> {
   Future<void> loadBudgets() async {
     state = state.copyWith(isLoading: true, errorMessage: null);
 
-    final cached = LocalCacheService.getCachedBudgets();
-    final limits = {
-      for (final b in cached) b['category'] as String: (b['limit'] as num).toDouble()
-    };
-    state = state.copyWith(limits: limits, isLoading: false);
+    try {
+      final api = ref.read(supabaseServiceProvider);
+      final raw = await api.getBudgets(state.selectedMonth);
+      final limits = {
+        for (final b in raw) 
+          (b['categories'] != null && b['categories']['name'] != null 
+            ? b['categories']['name'].toString() 
+            : (b['category']?.toString() ?? 'Others')): (b['limit'] as num).toDouble()
+      };
+      state = state.copyWith(limits: limits, isLoading: false);
+    } catch (e) {
+      // Fallback to cache
+      final cached = LocalCacheService.getCachedBudgets();
+      final limits = {
+        for (final b in cached) b['category'] as String: (b['limit'] as num).toDouble()
+      };
+      state = state.copyWith(limits: limits, isLoading: false);
+    }
   }
 
   Future<bool> setBudget(String category, double limit) async {
     try {
+      final api = ref.read(supabaseServiceProvider);
+      await api.setBudget({
+        'category': category,
+        'limit': limit,
+        'month': state.selectedMonth,
+      });
+
       final limits = {...state.limits, category: limit};
       final list = limits.entries
           .map((e) => {'category': e.key, 'limit': e.value})

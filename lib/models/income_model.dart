@@ -4,6 +4,8 @@ import 'package:equatable/equatable.dart';
 /// "Income" Google Sheet.
 class IncomeModel extends Equatable {
   final String id;
+  final String? familyId;
+  final String? memberId;
   final String receivedBy;
   final String source;
   final String description;
@@ -13,6 +15,8 @@ class IncomeModel extends Equatable {
 
   const IncomeModel({
     required this.id,
+    this.familyId,
+    this.memberId,
     required this.receivedBy,
     required this.source,
     required this.description,
@@ -33,7 +37,11 @@ class IncomeModel extends Equatable {
 
     return IncomeModel(
       id: id,
-      receivedBy: receivedBy,
+      familyId: json['family_id']?.toString(),
+      memberId: json['member_id']?.toString(),
+      receivedBy: json['members'] != null && json['members']['name'] != null 
+          ? json['members']['name'].toString() 
+          : receivedBy,
       source: source,
       description: description,
       amount: amount,
@@ -42,22 +50,23 @@ class IncomeModel extends Equatable {
     );
   }
 
-  /// toJson sends PascalCase keys as required by the GAS backend.
-  /// Income also needs 'Member' and 'Payment Mode' per backend validation.
+  /// toJson for Supabase
   Map<String, dynamic> toJson() {
     return {
-      'id': id,
-      'Member': receivedBy,
-      'Source': source,
-      'Description': description,
-      'Amount': amount,
-      'Date': '${date.year}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}',
-      'Payment Mode': 'N/A',
+      if (id.isNotEmpty) 'id': id,
+      if (familyId != null) 'family_id': familyId,
+      if (memberId != null) 'member_id': memberId,
+      'source': source,
+      'description': description,
+      'amount': amount,
+      'date': '${date.year}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}',
     };
   }
 
   IncomeModel copyWith({
     String? id,
+    String? familyId,
+    String? memberId,
     String? receivedBy,
     String? source,
     String? description,
@@ -67,6 +76,8 @@ class IncomeModel extends Equatable {
   }) {
     return IncomeModel(
       id: id ?? this.id,
+      familyId: familyId ?? this.familyId,
+      memberId: memberId ?? this.memberId,
       receivedBy: receivedBy ?? this.receivedBy,
       source: source ?? this.source,
       description: description ?? this.description,
@@ -78,6 +89,6 @@ class IncomeModel extends Equatable {
 
   @override
   List<Object?> get props =>
-      [id, receivedBy, source, description, amount, date];
+      [id, familyId, memberId, receivedBy, source, description, amount, date];
 }
 

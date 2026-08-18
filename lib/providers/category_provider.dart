@@ -4,10 +4,10 @@ import 'service_providers.dart';
 
 final categoriesProvider = FutureProvider<List<String>>((ref) async {
   try {
-    final api = ref.watch(apiServiceProvider);
+    final api = ref.watch(supabaseServiceProvider);
     final raw = await api.getCategories();
     final list = raw
-        .map((c) => c['CategoryName']?.toString() ?? '')
+        .map((c) => c['name']?.toString() ?? '')
         .where((name) => name.isNotEmpty)
         .toList();
     if (list.isEmpty) {

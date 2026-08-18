@@ -6,6 +6,7 @@ import '../../core/widgets/app_form_fields.dart';
 import '../../core/widgets/primary_button.dart';
 import '../../providers/category_provider.dart';
 import '../../providers/expense_provider.dart';
+import '../../providers/member_provider.dart';
 
 class AddExpenseScreen extends ConsumerStatefulWidget {
   const AddExpenseScreen({super.key});
@@ -20,8 +21,10 @@ class _AddExpenseScreenState extends ConsumerState<AddExpenseScreen> {
   final _amountController = TextEditingController();
   final _remarksController = TextEditingController();
 
-  String? _member = AppConstants.familyMembers.first;
-  String? _category;
+  String? _memberId;
+  String? _memberName;
+  String? _categoryId;
+  String? _categoryName;
   String? _paymentMode = AppConstants.paymentModes.first;
   DateTime _date = DateTime.now();
   TimeOfDay _time = TimeOfDay.now();
@@ -40,8 +43,10 @@ class _AddExpenseScreenState extends ConsumerState<AddExpenseScreen> {
     setState(() => _isSaving = true);
 
     final success = await ref.read(expenseControllerProvider.notifier).addExpense(
-          member: _member!,
-          category: _category!,
+          memberId: _memberId,
+          categoryId: _categoryId,
+          member: _memberName ?? 'Unknown',
+          category: _categoryName ?? 'Others',
           description: _descriptionController.text.trim(),
           amount: double.parse(_amountController.text.trim()),
           paymentMode: _paymentMode!,
@@ -67,9 +72,16 @@ class _AddExpenseScreenState extends ConsumerState<AddExpenseScreen> {
 
   @override
   Widget build(BuildContext context) {
+    // Categories logic
+    // But since the DB has UUIDs, let's just assume we rely on Supabase mapping for categories if we only have names,
+    // OR we can also update categoriesProvider to return Map<String,dynamic>.
+    // The user explicitly requested "Load the 4 members from Supabase public.members for the active family"
+    final membersAsync = ref.watch(membersProvider);
+    final members = membersAsync.value ?? [];
+    
     final categories = ref.watch(categoriesProvider).value ?? AppConstants.expenseCategories;
-    if (_category == null && categories.isNotEmpty) {
-      _category = categories.first;
+    if (_categoryName == null && categories.isNotEmpty) {
+      _categoryName = categories.first;
     }
 
     return Scaffold(
@@ -79,19 +91,36 @@ class _AddExpenseScreenState extends ConsumerState<AddExpenseScreen> {
         child: ListView(
           padding: const EdgeInsets.fromLTRB(20, 12, 20, 32),
           children: [
-            AppDropdownField(
-              label: 'Paid By',
-              value: _member,
-              items: AppConstants.familyMembers,
-              onChanged: (v) => setState(() => _member = v),
-              validator: (v) => Validators.required(v, field: 'Member'),
-            ),
+            if (members.isNotEmpty)
+              DropdownButtonFormField<String>(
+                decoration: InputDecoration(
+                  labelText: 'Paid By',
+                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                  filled: true,
+                ),
+                value: _memberId,
+                items: members.map((m) {
+                  return DropdownMenuItem<String>(
+                    value: m['id'].toString(),
+                    child: Text(m['name'].toString()),
+                  );
+                }).toList(),
+                onChanged: (val) {
+                  setState(() {
+                    _memberId = val;
+                    _memberName = members.firstWhere((m) => m['id'].toString() == val)['name'].toString();
+                  });
+                },
+                validator: (v) => v == null ? 'Please select a member' : null,
+              )
+            else
+              const Center(child: CircularProgressIndicator()),
             const SizedBox(height: 18),
             AppDropdownField(
               label: 'Category',
-              value: categories.contains(_category) ? _category : (categories.isNotEmpty ? categories.first : null),
+              value: categories.contains(_categoryName) ? _categoryName : (categories.isNotEmpty ? categories.first : null),
               items: categories,
-              onChanged: (v) => setState(() => _category = v),
+              onChanged: (v) => setState(() => _categoryName = v),
               validator: (v) => Validators.required(v, field: 'Category'),
             ),
             const SizedBox(height: 18),
