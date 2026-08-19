@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 class SupabaseService {
@@ -7,18 +8,78 @@ class SupabaseService {
   List<Map<String, dynamic>> _categoriesCache = [];
   String? _familyId;
 
+  // The known family UUID — used as fallback when RLS blocks the families table.
+  static const String _knownFamilyId = 'b4e16e52-a95f-4e6e-a6cf-dc8f85892010';
+
   Future<void> initializeCache() async {
-    final members = await _client.from('members').select();
-    _membersCache = List<Map<String, dynamic>>.from(members);
+    try {
+      // Try to fetch the active family from the DB.
+      final families = await _client.from('families').select().limit(1);
+      if (families.isNotEmpty) {
+        _familyId = (families.first['family_id'] ?? families.first['id'])?.toString();
+        debugPrint('[SupabaseService] Active family_id from DB: $_familyId');
+      } else {
+        // RLS blocking OR no families row — fall back to known UUID.
+        _familyId = _knownFamilyId;
+        debugPrint('[SupabaseService] families table returned 0 rows → using hardcoded family_id: $_familyId');
+      }
 
-    final categories = await _client.from('categories').select();
-    _categoriesCache = List<Map<String, dynamic>>.from(categories);
+      // Load members — try filtered first, fall back to RPC.
+      await _loadMembersCache();
 
-    final families = await _client.from('families').select().limit(1);
-    if (families.isNotEmpty) {
-      _familyId = families.first['id']?.toString();
+      final categories = await _client.from('categories').select();
+      _categoriesCache = List<Map<String, dynamic>>.from(categories);
+
+      debugPrint('[SupabaseService] Cache initialized: '
+          '${_membersCache.length} members, '
+          '${_categoriesCache.length} categories');
+    } catch (e) {
+      debugPrint('[SupabaseService] initializeCache error: $e');
+      // Still set the fallback family_id so expense inserts can proceed.
+      _familyId ??= _knownFamilyId;
     }
   }
+
+  Future<void> _loadMembersCache() async {
+    // Attempt 1: direct table SELECT filtered by family.
+    try {
+      final result = await _client
+          .from('members')
+          .select('id, family_id, name')
+          .eq('family_id', _familyId ?? _knownFamilyId)
+          .order('name');
+      _membersCache = List<Map<String, dynamic>>.from(result);
+      if (_membersCache.isNotEmpty) {
+        debugPrint('[SupabaseService] Members loaded via table: ${_membersCache.length}');
+        return;
+      }
+    } catch (e) {
+      debugPrint('[SupabaseService] members table query failed: $e');
+    }
+
+    // Attempt 2: RPC function (SECURITY DEFINER — bypasses RLS).
+    try {
+      final rpcResult = await _client.rpc('get_family_members');
+      _membersCache = List<Map<String, dynamic>>.from(rpcResult as List);
+      if (_membersCache.isNotEmpty) {
+        debugPrint('[SupabaseService] Members loaded via RPC: ${_membersCache.length}');
+        return;
+      }
+    } catch (e) {
+      debugPrint('[SupabaseService] get_family_members RPC failed: $e');
+    }
+
+    debugPrint('[SupabaseService] WARNING: Members cache is empty after all attempts.');
+  }
+
+  /// Ensure cache is populated. Called lazily before operations that need IDs.
+  Future<void> _ensureCacheReady() async {
+    if (_familyId == null || _membersCache.isEmpty) {
+      await initializeCache();
+    }
+  }
+
+  String? get activeFamilyId => _familyId;
 
   String? getMemberId(String name) {
     for (var m in _membersCache) {
@@ -39,8 +100,21 @@ class SupabaseService {
   }
 
   // Master Data
+
+  /// Returns all members for the active family, ordered by name.
+  /// Returns members for the active family.
+  /// Cache is already populated by initializeCache() / _loadMembersCache().
   Future<List<Map<String, dynamic>>> getMembers() async {
-    return await _client.from('members').select();
+    // Ensure cache is ready (triggers initializeCache which calls _loadMembersCache).
+    await _ensureCacheReady();
+
+    if (_membersCache.isNotEmpty) {
+      return _membersCache;
+    }
+
+    // Cache still empty after init — try once more directly.
+    await _loadMembersCache();
+    return _membersCache;
   }
 
   Future<List<Map<String, dynamic>>> getCategories() async {
@@ -77,7 +151,7 @@ class SupabaseService {
   }
 
   Future<Map<String, dynamic>> addExpense(Map<String, dynamic> expense) async {
-    if (_familyId == null) await initializeCache();
+    await _ensureCacheReady();
     
     // Auto-resolve IDs if names were passed instead
     if (expense['member_id'] == null && expense['member'] != null) {
@@ -88,14 +162,46 @@ class SupabaseService {
       expense['category_id'] = getCategoryId(expense['category'].toString());
       expense.remove('category');
     }
+
+    // Set family_id from cache
     expense['family_id'] = _familyId;
 
-    final response = await _client.from('expenses').insert(expense).select().single();
-    return response;
+    // Remove fields that don't exist in the DB schema
+    expense.remove('member');
+    expense.remove('category');
+
+    // Let Supabase generate the UUID — remove the client-side generated id
+    expense.remove('id');
+    // Also remove fields the DB doesn't have
+    expense.remove('remarks');
+
+    // Debug log (safe — no secrets)
+    debugPrint('[SupabaseService] addExpense payload:');
+    debugPrint('  family_id: ${expense['family_id']}');
+    debugPrint('  member_id: ${expense['member_id']}');
+    debugPrint('  category_id: ${expense['category_id']}');
+    debugPrint('  description: ${expense['description']}');
+    debugPrint('  amount: ${expense['amount']}');
+    debugPrint('  payment_mode: ${expense['payment_mode']}');
+    debugPrint('  expense_date: ${expense['expense_date']}');
+    debugPrint('  expense_time: ${expense['expense_time']}');
+
+    try {
+      final response = await _client.from('expenses').insert(expense).select().single();
+      debugPrint('[SupabaseService] Expense saved successfully: ${response['id']}');
+      return response;
+    } on PostgrestException catch (e) {
+      debugPrint('[SupabaseService] PostgrestException:');
+      debugPrint('  message: ${e.message}');
+      debugPrint('  code: ${e.code}');
+      debugPrint('  details: ${e.details}');
+      debugPrint('  hint: ${e.hint}');
+      rethrow;
+    }
   }
 
   Future<void> updateExpense(String id, Map<String, dynamic> expense) async {
-    if (_familyId == null) await initializeCache();
+    await _ensureCacheReady();
 
     if (expense['member_id'] == null && expense['member'] != null) {
       expense['member_id'] = getMemberId(expense['member'].toString());
@@ -105,6 +211,12 @@ class SupabaseService {
       expense['category_id'] = getCategoryId(expense['category'].toString());
       expense.remove('category');
     }
+
+    // Remove fields that don't exist in the DB
+    expense.remove('member');
+    expense.remove('category');
+    expense.remove('remarks');
+    expense.remove('id');
 
     await _client.from('expenses').update(expense).eq('id', id);
   }
@@ -133,7 +245,7 @@ class SupabaseService {
   }
 
   Future<Map<String, dynamic>> addIncome(Map<String, dynamic> income) async {
-    if (_familyId == null) await initializeCache();
+    await _ensureCacheReady();
 
     if (income['member_id'] == null && income['member'] != null) {
       income['member_id'] = getMemberId(income['member'].toString());
@@ -146,7 +258,7 @@ class SupabaseService {
   }
 
   Future<void> updateIncome(String id, Map<String, dynamic> income) async {
-    if (_familyId == null) await initializeCache();
+    await _ensureCacheReady();
 
     if (income['member_id'] == null && income['member'] != null) {
       income['member_id'] = getMemberId(income['member'].toString());

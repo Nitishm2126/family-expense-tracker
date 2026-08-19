@@ -40,6 +40,32 @@ class _AddExpenseScreenState extends ConsumerState<AddExpenseScreen> {
 
   Future<void> _save() async {
     if (_formKey.currentState?.validate() != true) return;
+
+    // Validate member selection
+    if (_memberId == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Please select a family member.')),
+      );
+      return;
+    }
+
+    // Validate required fields
+    final description = _descriptionController.text.trim();
+    final amountText = _amountController.text.trim();
+    if (description.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Please enter a description.')),
+      );
+      return;
+    }
+    final amount = double.tryParse(amountText);
+    if (amount == null || amount <= 0) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Please enter a valid amount greater than 0.')),
+      );
+      return;
+    }
+
     setState(() => _isSaving = true);
 
     final success = await ref.read(expenseControllerProvider.notifier).addExpense(
@@ -47,8 +73,8 @@ class _AddExpenseScreenState extends ConsumerState<AddExpenseScreen> {
           categoryId: _categoryId,
           member: _memberName ?? 'Unknown',
           category: _categoryName ?? 'Others',
-          description: _descriptionController.text.trim(),
-          amount: double.parse(_amountController.text.trim()),
+          description: description,
+          amount: amount,
           paymentMode: _paymentMode!,
           date: _date,
           time: _time.format(context),
@@ -64,21 +90,20 @@ class _AddExpenseScreenState extends ConsumerState<AddExpenseScreen> {
       );
       Navigator.of(context).pop();
     } else {
+      // Show the actual error from the provider
+      final errorMsg = ref.read(expenseControllerProvider).errorMessage;
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Could not save expense. Please try again.')),
+        SnackBar(
+          content: Text(errorMsg ?? 'Could not save expense. Please try again.'),
+          duration: const Duration(seconds: 5),
+        ),
       );
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    // Categories logic
-    // But since the DB has UUIDs, let's just assume we rely on Supabase mapping for categories if we only have names,
-    // OR we can also update categoriesProvider to return Map<String,dynamic>.
-    // The user explicitly requested "Load the 4 members from Supabase public.members for the active family"
-    final membersAsync = ref.watch(membersProvider);
-    final members = membersAsync.value ?? [];
-    
+    final memberState = ref.watch(memberControllerProvider);
     final categories = ref.watch(categoriesProvider).value ?? AppConstants.expenseCategories;
     if (_categoryName == null && categories.isNotEmpty) {
       _categoryName = categories.first;
@@ -91,30 +116,8 @@ class _AddExpenseScreenState extends ConsumerState<AddExpenseScreen> {
         child: ListView(
           padding: const EdgeInsets.fromLTRB(20, 12, 20, 32),
           children: [
-            if (members.isNotEmpty)
-              DropdownButtonFormField<String>(
-                decoration: InputDecoration(
-                  labelText: 'Paid By',
-                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-                  filled: true,
-                ),
-                value: _memberId,
-                items: members.map((m) {
-                  return DropdownMenuItem<String>(
-                    value: m['id'].toString(),
-                    child: Text(m['name'].toString()),
-                  );
-                }).toList(),
-                onChanged: (val) {
-                  setState(() {
-                    _memberId = val;
-                    _memberName = members.firstWhere((m) => m['id'].toString() == val)['name'].toString();
-                  });
-                },
-                validator: (v) => v == null ? 'Please select a member' : null,
-              )
-            else
-              const Center(child: CircularProgressIndicator()),
+            // Member selector with proper state handling
+            _buildMemberSelector(memberState),
             const SizedBox(height: 18),
             AppDropdownField(
               label: 'Category',
@@ -184,5 +187,105 @@ class _AddExpenseScreenState extends ConsumerState<AddExpenseScreen> {
       ),
     );
   }
-}
 
+  Widget _buildMemberSelector(MemberState memberState) {
+    switch (memberState.status) {
+      case MemberStatus.loading:
+        return Container(
+          padding: const EdgeInsets.symmetric(vertical: 16),
+          decoration: BoxDecoration(
+            border: Border.all(color: Theme.of(context).colorScheme.outline.withValues(alpha: 0.4)),
+            borderRadius: BorderRadius.circular(12),
+          ),
+          child: const Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              SizedBox(
+                width: 18,
+                height: 18,
+                child: CircularProgressIndicator(strokeWidth: 2),
+              ),
+              SizedBox(width: 12),
+              Text('Loading members...'),
+            ],
+          ),
+        );
+
+      case MemberStatus.loaded:
+        return DropdownButtonFormField<String>(
+          decoration: InputDecoration(
+            labelText: 'Paid By',
+            border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+            filled: true,
+          ),
+          value: _memberId,
+          items: memberState.members.map((m) {
+            return DropdownMenuItem<String>(
+              value: m['id'].toString(),
+              child: Text(m['name'].toString()),
+            );
+          }).toList(),
+          onChanged: (val) {
+            setState(() {
+              _memberId = val;
+              _memberName = memberState.members
+                  .firstWhere((m) => m['id'].toString() == val)['name']
+                  .toString();
+            });
+          },
+          validator: (v) => v == null ? 'Please select a member' : null,
+        );
+
+      case MemberStatus.empty:
+        return Container(
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            border: Border.all(color: Colors.orange.withValues(alpha: 0.6)),
+            borderRadius: BorderRadius.circular(12),
+            color: Colors.orange.withValues(alpha: 0.05),
+          ),
+          child: const Row(
+            children: [
+              Icon(Icons.info_outline, color: Colors.orange, size: 20),
+              SizedBox(width: 12),
+              Expanded(
+                child: Text(
+                  'No family members found. Please add members first.',
+                  style: TextStyle(color: Colors.orange),
+                ),
+              ),
+            ],
+          ),
+        );
+
+      case MemberStatus.error:
+        return Container(
+          padding: const EdgeInsets.all(12),
+          decoration: BoxDecoration(
+            border: Border.all(color: Colors.red.withValues(alpha: 0.5)),
+            borderRadius: BorderRadius.circular(12),
+            color: Colors.red.withValues(alpha: 0.05),
+          ),
+          child: Row(
+            children: [
+              const Icon(Icons.error_outline, color: Colors.red, size: 20),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Text(
+                  memberState.errorMessage ?? 'Failed to load members',
+                  style: const TextStyle(color: Colors.red, fontSize: 13),
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+              const SizedBox(width: 8),
+              TextButton(
+                onPressed: () => ref.read(memberControllerProvider.notifier).retry(),
+                child: const Text('Retry'),
+              ),
+            ],
+          ),
+        );
+    }
+  }
+}

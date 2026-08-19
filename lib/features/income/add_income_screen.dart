@@ -62,8 +62,7 @@ class _AddIncomeScreenState extends ConsumerState<AddIncomeScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final membersAsync = ref.watch(membersProvider);
-    final members = membersAsync.value ?? [];
+    final memberState = ref.watch(memberControllerProvider);
 
     return Scaffold(
       appBar: AppBar(title: const Text('Add Income')),
@@ -72,7 +71,7 @@ class _AddIncomeScreenState extends ConsumerState<AddIncomeScreen> {
         child: ListView(
           padding: const EdgeInsets.fromLTRB(20, 12, 20, 32),
           children: [
-            if (members.isNotEmpty)
+            if (memberState.status == MemberStatus.loaded && memberState.members.isNotEmpty)
               DropdownButtonFormField<String>(
                 decoration: InputDecoration(
                   labelText: 'Received By',
@@ -80,7 +79,7 @@ class _AddIncomeScreenState extends ConsumerState<AddIncomeScreen> {
                   filled: true,
                 ),
                 value: _memberId,
-                items: members.map((m) {
+                items: memberState.members.map((m) {
                   return DropdownMenuItem<String>(
                     value: m['id'].toString(),
                     child: Text(m['name'].toString()),
@@ -89,13 +88,24 @@ class _AddIncomeScreenState extends ConsumerState<AddIncomeScreen> {
                 onChanged: (val) {
                   setState(() {
                     _memberId = val;
-                    _receivedByName = members.firstWhere((m) => m['id'].toString() == val)['name'].toString();
+                    _receivedByName = memberState.members.firstWhere((m) => m['id'].toString() == val)['name'].toString();
                   });
                 },
                 validator: (v) => v == null ? 'Please select a member' : null,
               )
+            else if (memberState.status == MemberStatus.error)
+              Row(
+                children: [
+                  const Icon(Icons.error_outline, color: Colors.red, size: 18),
+                  const SizedBox(width: 8),
+                  Expanded(child: Text(memberState.errorMessage ?? 'Failed to load members', style: const TextStyle(color: Colors.red, fontSize: 13))),
+                  TextButton(onPressed: () => ref.read(memberControllerProvider.notifier).retry(), child: const Text('Retry')),
+                ],
+              )
+            else if (memberState.status == MemberStatus.loading)
+              const Center(child: CircularProgressIndicator())
             else
-              const Center(child: CircularProgressIndicator()),
+              const Text('No family members found.', style: TextStyle(color: Colors.orange)),
             const SizedBox(height: 18),
             AppTextField(
               label: 'Amount',
