@@ -56,6 +56,7 @@ class IncomeModel extends Equatable {
       if (id.isNotEmpty) 'id': id,
       if (familyId != null) 'family_id': familyId,
       if (memberId != null) 'member_id': memberId,
+      'member': receivedBy,
       'source': source,
       'description': description,
       'amount': amount,

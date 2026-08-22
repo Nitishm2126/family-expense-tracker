@@ -1,30 +1,73 @@
 -- =================================================================
--- FIX EXPENSES INSERT RLS POLICY
+-- CREATE insert_expense RPC FUNCTION
+-- Same SECURITY DEFINER pattern as get_family_members()
+-- which is already working in the app.
+--
 -- Run this in the Supabase SQL Editor:
 -- https://supabase.com/dashboard/project/eowvprknwokacnmickgt/sql/new
 -- =================================================================
 
--- 1. Drop any existing INSERT policies for anon on expenses
-DROP POLICY IF EXISTS "Allow anon insert expenses" ON public.expenses;
-DROP POLICY IF EXISTS "Enable insert for authenticated users only" ON public.expenses;
-DROP POLICY IF EXISTS "Enable insert for anon" ON public.expenses;
+-- This function bypasses RLS (SECURITY DEFINER), but validates
+-- that the member actually belongs to the given family before inserting.
+CREATE OR REPLACE FUNCTION public.insert_expense(
+    p_family_id uuid,
+    p_member_id uuid,
+    p_category_id uuid DEFAULT NULL,
+    p_description text DEFAULT '',
+    p_amount numeric DEFAULT 0,
+    p_payment_mode text DEFAULT 'Cash',
+    p_expense_date date DEFAULT CURRENT_DATE,
+    p_expense_time text DEFAULT ''
+)
+RETURNS json
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = public
+AS $$
+DECLARE
+    result json;
+BEGIN
+    -- Validate: member must exist and belong to the given family
+    IF NOT EXISTS (
+        SELECT 1 FROM public.members m
+        WHERE m.id = p_member_id AND m.family_id = p_family_id
+    ) THEN
+        RAISE EXCEPTION 'Invalid member_id or member does not belong to the given family';
+    END IF;
 
--- 2. Create the Restrictive INSERT Policy for anon
--- This ensures that the anon role can only insert if:
---   a) The family_id matches the app's active family ID
---   b) The member_id actually belongs to that family in the members table
-CREATE POLICY "Restrictive anon insert expenses" 
-ON public.expenses 
-FOR INSERT 
-TO anon 
-WITH CHECK (
-  family_id = 'b4e16e52-a95f-4e6e-a6cf-dc8f85892010'::uuid
-  AND EXISTS (
-    SELECT 1 
-    FROM public.members m 
-    WHERE m.id = expenses.member_id 
-    AND m.family_id = expenses.family_id
-  )
-);
+    -- Insert the expense
+    INSERT INTO public.expenses (
+        family_id,
+        member_id,
+        category_id,
+        description,
+        amount,
+        payment_mode,
+        expense_date,
+        expense_time
+    ) VALUES (
+        p_family_id,
+        p_member_id,
+        p_category_id,
+        p_description,
+        p_amount,
+        p_payment_mode,
+        p_expense_date,
+        p_expense_time
+    )
+    RETURNING row_to_json(expenses.*) INTO result;
 
--- Note: Ensure that category_id is either a valid UUID or NULL.
+    RETURN result;
+END;
+$$;
+
+-- Grant the anon role permission to call this function
+GRANT EXECUTE ON FUNCTION public.insert_expense(uuid, uuid, uuid, text, numeric, text, date, text) TO anon;
+
+-- =================================================================
+-- VERIFY: Test that the function exists
+-- =================================================================
+SELECT routine_name, routine_type
+FROM information_schema.routines
+WHERE routine_schema = 'public'
+  AND routine_name = 'insert_expense';

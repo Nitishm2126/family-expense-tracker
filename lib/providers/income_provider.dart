@@ -87,7 +87,6 @@ class IncomeController extends StateNotifier<IncomeState> {
       await api.addIncome(income.toJson());
       // Reload from backend so list reflects exactly what the server has.
       await loadIncomes();
-      ref.read(dashboardControllerProvider.notifier).loadDashboard();
       return true;
     } catch (e) {
       state = state.copyWith(errorMessage: e.toString());
@@ -100,7 +99,6 @@ class IncomeController extends StateNotifier<IncomeState> {
       final api = ref.read(supabaseServiceProvider);
       await api.updateIncome(updated.id, updated.toJson());
       await loadIncomes();
-      ref.read(dashboardControllerProvider.notifier).loadDashboard();
       return true;
     } catch (e) {
       state = state.copyWith(errorMessage: e.toString());
@@ -115,7 +113,6 @@ class IncomeController extends StateNotifier<IncomeState> {
       final api = ref.read(supabaseServiceProvider);
       await api.deleteIncome(id);
       await loadIncomes();
-      ref.read(dashboardControllerProvider.notifier).loadDashboard();
       return true;
     } catch (e) {
       state = state.copyWith(incomes: previous, errorMessage: e.toString());

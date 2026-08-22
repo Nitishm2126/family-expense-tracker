@@ -101,7 +101,6 @@ class ExpenseController extends StateNotifier<ExpenseState> {
 
       // Reload from backend so list reflects exactly what the server has.
       await loadExpenses();
-      ref.read(dashboardControllerProvider.notifier).loadDashboard();
       return true;
     } catch (e) {
       state = state.copyWith(errorMessage: e.toString());
@@ -115,7 +114,6 @@ class ExpenseController extends StateNotifier<ExpenseState> {
       await api.updateExpense(updated.id, updated.toJson());
       // Reload from backend to reflect real state.
       await loadExpenses();
-      ref.read(dashboardControllerProvider.notifier).loadDashboard();
       return true;
     } catch (e) {
       state = state.copyWith(errorMessage: e.toString());
@@ -132,7 +130,6 @@ class ExpenseController extends StateNotifier<ExpenseState> {
       await api.deleteExpense(id);
       // Reload from backend to confirm deletion.
       await loadExpenses();
-      ref.read(dashboardControllerProvider.notifier).loadDashboard();
       return true;
     } catch (e) {
       // Restore on error.

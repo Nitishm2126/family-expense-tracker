@@ -66,6 +66,15 @@ class ExpenseModel extends Equatable {
     final remarks = (json['Remarks'] ?? json['remarks'] ?? '').toString();
     final createdAtStr = (json['CreatedAt'] ?? json['createdAt'] ?? '').toString();
 
+    String resolvedCategory = category;
+    if (json['category_id'] != null) {
+      if (json['categories'] != null && json['categories']['name'] != null) {
+        resolvedCategory = json['categories']['name'].toString();
+      } else {
+        resolvedCategory = "Unresolved Category (${json['category_id']})";
+      }
+    }
+
     return ExpenseModel(
       id: id,
       familyId: json['family_id']?.toString(),
@@ -75,9 +84,7 @@ class ExpenseModel extends Equatable {
       member: json['members'] != null && json['members']['name'] != null 
           ? json['members']['name'].toString() 
           : member,
-      category: json['categories'] != null && json['categories']['name'] != null 
-          ? json['categories']['name'].toString() 
-          : category,
+      category: resolvedCategory,
       description: description,
       amount: amount,
       paymentMode: paymentMode,
@@ -95,6 +102,8 @@ class ExpenseModel extends Equatable {
       if (familyId != null) 'family_id': familyId,
       if (memberId != null) 'member_id': memberId,
       if (categoryId != null) 'category_id': categoryId,
+      'member': member,
+      'category': category,
       'description': description,
       'amount': amount,
       'payment_mode': paymentMode,

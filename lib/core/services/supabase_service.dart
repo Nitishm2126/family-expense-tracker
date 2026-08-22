@@ -13,28 +13,35 @@ class SupabaseService {
 
   Future<void> initializeCache() async {
     try {
-      // Try to fetch the active family from the DB.
-      final families = await _client.from('families').select().limit(1);
-      if (families.isNotEmpty) {
-        _familyId = (families.first['family_id'] ?? families.first['id'])?.toString();
-        debugPrint('[SupabaseService] Active family_id from DB: $_familyId');
-      } else {
-        // RLS blocking OR no families row — fall back to known UUID.
-        _familyId = _knownFamilyId;
-        debugPrint('[SupabaseService] families table returned 0 rows → using hardcoded family_id: $_familyId');
-      }
+      // Hardcode to the specific family ID as requested
+      _familyId = _knownFamilyId;
+      debugPrint('[SupabaseService] Using active family_id: $_familyId');
 
       // Load members — try filtered first, fall back to RPC.
       await _loadMembersCache();
 
-      final categories = await _client.from('categories').select();
+      debugPrint('[CATEGORY DEBUG] Active family ID = $_familyId');
+      debugPrint('[CATEGORY DEBUG] Loading categories...');
+      debugPrint('[CATEGORY DEBUG] Category family ID = $_familyId');
+      
+      final categories = await _client
+          .from('categories')
+          .select()
+          .eq('family_id', _familyId!);
       _categoriesCache = List<Map<String, dynamic>>.from(categories);
+
+      debugPrint('[CATEGORY DEBUG] loaded categories count = ${_categoriesCache.length}');
+      for (final row in _categoriesCache) {
+        debugPrint('[CATEGORY DEBUG] ${row['name']} -> ${row['id']}');
+      }
 
       debugPrint('[SupabaseService] Cache initialized: '
           '${_membersCache.length} members, '
           '${_categoriesCache.length} categories');
+    } on PostgrestException catch (e) {
+      debugPrint('[CATEGORY ERROR] PostgrestException: ${e.message} (Code: ${e.code}, Details: ${e.details})');
     } catch (e) {
-      debugPrint('[SupabaseService] initializeCache error: $e');
+      debugPrint('[CATEGORY ERROR] $e');
       // Still set the fallback family_id so expense inserts can proceed.
       _familyId ??= _knownFamilyId;
     }
@@ -50,7 +57,8 @@ class SupabaseService {
           .order('name');
       _membersCache = List<Map<String, dynamic>>.from(result);
       if (_membersCache.isNotEmpty) {
-        debugPrint('[SupabaseService] Members loaded via table: ${_membersCache.length}');
+        debugPrint(
+            '[SupabaseService] Members loaded via table: ${_membersCache.length}');
         return;
       }
     } catch (e) {
@@ -62,14 +70,16 @@ class SupabaseService {
       final rpcResult = await _client.rpc('get_family_members');
       _membersCache = List<Map<String, dynamic>>.from(rpcResult as List);
       if (_membersCache.isNotEmpty) {
-        debugPrint('[SupabaseService] Members loaded via RPC: ${_membersCache.length}');
+        debugPrint(
+            '[SupabaseService] Members loaded via RPC: ${_membersCache.length}');
         return;
       }
     } catch (e) {
       debugPrint('[SupabaseService] get_family_members RPC failed: $e');
     }
 
-    debugPrint('[SupabaseService] WARNING: Members cache is empty after all attempts.');
+    debugPrint(
+        '[SupabaseService] WARNING: Members cache is empty after all attempts.');
   }
 
   /// Ensure cache is populated. Called lazily before operations that need IDs.
@@ -91,11 +101,21 @@ class SupabaseService {
   }
 
   String? getCategoryId(String name) {
+    debugPrint('[CATEGORY DEBUG] Resolving category: "$name"');
+    debugPrint('[CATEGORY DEBUG] Cache size: ${_categoriesCache.length}');
     for (var c in _categoriesCache) {
-      if (c['name'].toString().toLowerCase() == name.toLowerCase()) {
-        return c['id'].toString();
+      debugPrint('[CATEGORY DEBUG] Cache item: ${c['name']} -> ${c['id']}');
+    }
+    
+    final searchName = name.trim().toLowerCase();
+    for (var c in _categoriesCache) {
+      if (c['name'].toString().trim().toLowerCase() == searchName) {
+        final id = c['id'].toString();
+        debugPrint('[CATEGORY DEBUG] $name resolved to: $id');
+        return id;
       }
     }
+    debugPrint('[CATEGORY DEBUG] FAILED to resolve $name');
     return null;
   }
 
@@ -118,7 +138,10 @@ class SupabaseService {
   }
 
   Future<List<Map<String, dynamic>>> getCategories() async {
-    return await _client.from('categories').select();
+    return await _client
+        .from('categories')
+        .select()
+        .eq('family_id', _familyId ?? _knownFamilyId);
   }
 
   Future<Map<String, dynamic>?> getFirstFamily() async {
@@ -139,27 +162,41 @@ class SupabaseService {
       members:member_id(name),
       categories:category_id(name)
     ''');
-    
+
     if (from != null) {
       query = query.gte('expense_date', from);
     }
     if (to != null) {
       query = query.lte('expense_date', to);
     }
-    
-    return await query.order('expense_date', ascending: false).order('expense_time', ascending: false);
+
+    return await query
+        .order('expense_date', ascending: false)
+        .order('expense_time', ascending: false);
   }
 
   Future<Map<String, dynamic>> addExpense(Map<String, dynamic> expense) async {
     await _ensureCacheReady();
-    
+
     // Auto-resolve IDs if names were passed instead
-    if (expense['member_id'] == null && expense['member'] != null) {
-      expense['member_id'] = getMemberId(expense['member'].toString());
+    if (expense.containsKey('member')) {
+      final memberName = expense['member'].toString();
+      final mId = getMemberId(memberName);
+      if (mId != null) {
+        expense['member_id'] = mId;
+      } else {
+        throw Exception("Member '$memberName' could not be resolved to a member ID.");
+      }
       expense.remove('member');
     }
-    if (expense['category_id'] == null && expense['category'] != null) {
-      expense['category_id'] = getCategoryId(expense['category'].toString());
+    if (expense.containsKey('category')) {
+      final categoryName = expense['category'].toString();
+      final cId = getCategoryId(categoryName);
+      if (cId != null) {
+        expense['category_id'] = cId;
+      } else {
+        throw Exception("Category '$categoryName' could not be resolved to a category ID.");
+      }
       expense.remove('category');
     }
 
@@ -175,20 +212,15 @@ class SupabaseService {
     // Also remove fields the DB doesn't have
     expense.remove('remarks');
 
-    // Debug log (safe — no secrets)
-    debugPrint('[SupabaseService] addExpense payload:');
-    debugPrint('  family_id: ${expense['family_id']}');
-    debugPrint('  member_id: ${expense['member_id']}');
-    debugPrint('  category_id: ${expense['category_id']}');
-    debugPrint('  description: ${expense['description']}');
-    debugPrint('  amount: ${expense['amount']}');
-    debugPrint('  payment_mode: ${expense['payment_mode']}');
-    debugPrint('  expense_date: ${expense['expense_date']}');
-    debugPrint('  expense_time: ${expense['expense_time']}');
+    // Debug: print the COMPLETE map being sent (all keys + values)
+    debugPrint('[SupabaseService] addExpense FULL MAP keys: ${expense.keys.toList()}');
+    debugPrint('[SupabaseService] addExpense FULL MAP: $expense');
 
     try {
-      final response = await _client.from('expenses').insert(expense).select().single();
-      debugPrint('[SupabaseService] Expense saved successfully: ${response['id']}');
+      final response =
+          await _client.from('expenses').insert(expense).select().single();
+      debugPrint(
+          '[SupabaseService] Expense saved successfully: ${response['id']}');
       return response;
     } on PostgrestException catch (e) {
       debugPrint('[SupabaseService] PostgrestException:');
@@ -203,12 +235,24 @@ class SupabaseService {
   Future<void> updateExpense(String id, Map<String, dynamic> expense) async {
     await _ensureCacheReady();
 
-    if (expense['member_id'] == null && expense['member'] != null) {
-      expense['member_id'] = getMemberId(expense['member'].toString());
+    if (expense.containsKey('member')) {
+      final memberName = expense['member'].toString();
+      final mId = getMemberId(memberName);
+      if (mId != null) {
+        expense['member_id'] = mId;
+      } else {
+        throw Exception("Member '$memberName' could not be resolved to a member ID.");
+      }
       expense.remove('member');
     }
-    if (expense['category_id'] == null && expense['category'] != null) {
-      expense['category_id'] = getCategoryId(expense['category'].toString());
+    if (expense.containsKey('category')) {
+      final categoryName = expense['category'].toString();
+      final cId = getCategoryId(categoryName);
+      if (cId != null) {
+        expense['category_id'] = cId;
+      } else {
+        throw Exception("Category '$categoryName' could not be resolved to a category ID.");
+      }
       expense.remove('category');
     }
 
@@ -247,21 +291,24 @@ class SupabaseService {
   Future<Map<String, dynamic>> addIncome(Map<String, dynamic> income) async {
     await _ensureCacheReady();
 
-    if (income['member_id'] == null && income['member'] != null) {
-      income['member_id'] = getMemberId(income['member'].toString());
+    if (income.containsKey('member')) {
+      final mId = getMemberId(income['member'].toString());
+      if (mId != null) income['member_id'] = mId;
       income.remove('member');
     }
     income['family_id'] = _familyId;
 
-    final response = await _client.from('incomes').insert(income).select().single();
+    final response =
+        await _client.from('incomes').insert(income).select().single();
     return response;
   }
 
   Future<void> updateIncome(String id, Map<String, dynamic> income) async {
     await _ensureCacheReady();
 
-    if (income['member_id'] == null && income['member'] != null) {
-      income['member_id'] = getMemberId(income['member'].toString());
+    if (income.containsKey('member')) {
+      final mId = getMemberId(income['member'].toString());
+      if (mId != null) income['member_id'] = mId;
       income.remove('member');
     }
 
@@ -291,11 +338,11 @@ class SupabaseService {
     if (response.isNotEmpty) return response.first;
     return null;
   }
-  
+
   Future<List<Map<String, dynamic>>> getCategoryExpenseSummary() async {
     return await _client.from('category_expense_summary').select();
   }
-  
+
   Future<List<Map<String, dynamic>>> getMemberExpenseSummary() async {
     return await _client.from('member_expense_summary').select();
   }
