@@ -114,7 +114,7 @@ class _AddExpenseScreenState extends ConsumerState<AddExpenseScreen> {
       body: Form(
         key: _formKey,
         child: ListView(
-          padding: const EdgeInsets.fromLTRB(20, 12, 20, 32),
+          padding: EdgeInsets.fromLTRB(20, 12, 20, MediaQuery.of(context).padding.bottom + 32),
           children: [
             // Member selector with proper state handling
             _buildMemberSelector(memberState),

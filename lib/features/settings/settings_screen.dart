@@ -1,3 +1,4 @@
+import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../core/constants/app_constants.dart';
@@ -22,7 +23,7 @@ class SettingsScreen extends ConsumerWidget {
     return Scaffold(
       appBar: AppBar(title: const Text('Settings')),
       body: ListView(
-        padding: const EdgeInsets.symmetric(vertical: 12),
+        padding: EdgeInsets.only(bottom: MediaQuery.of(context).padding.bottom + 24, top: 12),
         children: [
           const _SectionHeader(title: 'Preferences'),
           _SettingsTile(
@@ -312,7 +313,7 @@ class _ChangePasswordSheetState extends ConsumerState<_ChangePasswordSheet> {
         left: 20,
         right: 20,
         top: 20,
-        bottom: MediaQuery.of(context).viewInsets.bottom + 20,
+        bottom: math.max(MediaQuery.of(context).viewInsets.bottom, MediaQuery.of(context).padding.bottom) + 20,
       ),
       child: Column(
         mainAxisSize: MainAxisSize.min,

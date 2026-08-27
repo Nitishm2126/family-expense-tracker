@@ -1,3 +1,4 @@
+import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../core/constants/app_constants.dart';
@@ -54,7 +55,7 @@ class BudgetScreen extends ConsumerWidget {
       body: budgetState.isLoading && budgets.isEmpty
           ? const ShimmerList()
           : ListView(
-              padding: const EdgeInsets.fromLTRB(16, 8, 16, 100),
+              padding: EdgeInsets.fromLTRB(16, 8, 16, MediaQuery.of(context).padding.bottom + 16),
               children: [
                 if (totalLimit > 0)
                   Container(
@@ -219,7 +220,7 @@ class _SetBudgetSheetState extends ConsumerState<_SetBudgetSheet> {
         left: 20,
         right: 20,
         top: 20,
-        bottom: MediaQuery.of(context).viewInsets.bottom + 20,
+        bottom: math.max(MediaQuery.of(context).viewInsets.bottom, MediaQuery.of(context).padding.bottom) + 20,
       ),
       child: Column(
         mainAxisSize: MainAxisSize.min,

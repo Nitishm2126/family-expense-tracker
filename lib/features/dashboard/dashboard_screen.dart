@@ -44,7 +44,7 @@ class DashboardScreen extends ConsumerWidget {
         child: (isLoading && summary.recentExpenses.isEmpty)
             ? const ShimmerList()
             : ListView(
-                padding: const EdgeInsets.fromLTRB(16, 8, 16, 100),
+                padding: EdgeInsets.fromLTRB(16, 8, 16, MediaQuery.of(context).padding.bottom + 24),
                 children: [
                   GradientCard(
                     child: Column(

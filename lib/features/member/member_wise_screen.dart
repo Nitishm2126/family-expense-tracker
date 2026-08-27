@@ -36,7 +36,7 @@ class MemberWiseScreen extends ConsumerWidget {
     return Scaffold(
       appBar: AppBar(title: const Text('Member Wise')),
       body: ListView(
-        padding: const EdgeInsets.fromLTRB(16, 8, 16, 32),
+        padding: EdgeInsets.fromLTRB(16, 8, 16, MediaQuery.of(context).padding.bottom + 16),
         children: [
           Text(Formatters.monthYear(now), style: AppTextStyles.caption(theme.colorScheme.onSurface.withValues(alpha: 0.6))),
           const SizedBox(height: 16),

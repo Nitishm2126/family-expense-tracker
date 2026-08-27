@@ -1,3 +1,4 @@
+import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../core/constants/app_constants.dart';
@@ -166,7 +167,7 @@ class _ExpenseListScreenState extends ConsumerState<ExpenseListScreen> {
                           ],
                         )
                       : ListView.separated(
-                          padding: const EdgeInsets.fromLTRB(16, 0, 16, 100),
+                          padding: EdgeInsets.fromLTRB(16, 0, 16, MediaQuery.of(context).padding.bottom + 24),
                           itemCount: filtered.length + 1,
                           separatorBuilder: (_, __) => const SizedBox(height: 4),
                           itemBuilder: (context, index) {
@@ -227,7 +228,7 @@ class _FilterSortSheetState extends State<_FilterSortSheet> {
         left: 20,
         right: 20,
         top: 20,
-        bottom: MediaQuery.of(context).viewInsets.bottom + 20,
+        bottom: math.max(MediaQuery.of(context).viewInsets.bottom, MediaQuery.of(context).padding.bottom) + 20,
       ),
       child: Column(
         mainAxisSize: MainAxisSize.min,
