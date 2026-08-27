@@ -8,12 +8,20 @@ class SettingsState {
   final ThemeMode themeMode;
   final bool reminderEnabled;
   final double budgetAlertThreshold; // 0.0 - 1.0
+  final double glassTransparency;
+  final double glassBlur;
+  final bool glassBorderEnabled;
+  final bool glassShadowEnabled;
 
   const SettingsState({
     this.currency = 'INR (₹)',
     this.themeMode = ThemeMode.light,
     this.reminderEnabled = true,
     this.budgetAlertThreshold = 0.8,
+    this.glassTransparency = 0.75,
+    this.glassBlur = 18.0,
+    this.glassBorderEnabled = true,
+    this.glassShadowEnabled = true,
   });
 
   SettingsState copyWith({
@@ -21,12 +29,20 @@ class SettingsState {
     ThemeMode? themeMode,
     bool? reminderEnabled,
     double? budgetAlertThreshold,
+    double? glassTransparency,
+    double? glassBlur,
+    bool? glassBorderEnabled,
+    bool? glassShadowEnabled,
   }) {
     return SettingsState(
       currency: currency ?? this.currency,
       themeMode: themeMode ?? this.themeMode,
       reminderEnabled: reminderEnabled ?? this.reminderEnabled,
       budgetAlertThreshold: budgetAlertThreshold ?? this.budgetAlertThreshold,
+      glassTransparency: glassTransparency ?? this.glassTransparency,
+      glassBlur: glassBlur ?? this.glassBlur,
+      glassBorderEnabled: glassBorderEnabled ?? this.glassBorderEnabled,
+      glassShadowEnabled: glassShadowEnabled ?? this.glassShadowEnabled,
     );
   }
 }
@@ -45,6 +61,11 @@ class SettingsController extends StateNotifier<SettingsState> {
     final themeStr = prefs.getString(AppConstants.prefsThemeMode) ?? 'light';
     final reminder = prefs.getBool(AppConstants.prefsReminderEnabled) ?? true;
     final threshold = prefs.getDouble(AppConstants.prefsBudgetAlertThreshold) ?? 0.8;
+    
+    final glassTransparency = prefs.getDouble(AppConstants.prefsGlassTransparency) ?? 0.75;
+    final glassBlur = prefs.getDouble(AppConstants.prefsGlassBlur) ?? 18.0;
+    final glassBorderEnabled = prefs.getBool(AppConstants.prefsGlassBorderEnabled) ?? true;
+    final glassShadowEnabled = prefs.getBool(AppConstants.prefsGlassShadowEnabled) ?? true;
 
     state = state.copyWith(
       currency: currency,
@@ -55,6 +76,10 @@ class SettingsController extends StateNotifier<SettingsState> {
               : ThemeMode.light,
       reminderEnabled: reminder,
       budgetAlertThreshold: threshold,
+      glassTransparency: glassTransparency,
+      glassBlur: glassBlur,
+      glassBorderEnabled: glassBorderEnabled,
+      glassShadowEnabled: glassShadowEnabled,
     );
   }
 
@@ -80,6 +105,30 @@ class SettingsController extends StateNotifier<SettingsState> {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setDouble(AppConstants.prefsBudgetAlertThreshold, threshold);
     state = state.copyWith(budgetAlertThreshold: threshold);
+  }
+
+  Future<void> setGlassTransparency(double value) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setDouble(AppConstants.prefsGlassTransparency, value);
+    state = state.copyWith(glassTransparency: value);
+  }
+
+  Future<void> setGlassBlur(double value) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setDouble(AppConstants.prefsGlassBlur, value);
+    state = state.copyWith(glassBlur: value);
+  }
+
+  Future<void> setGlassBorderEnabled(bool value) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool(AppConstants.prefsGlassBorderEnabled, value);
+    state = state.copyWith(glassBorderEnabled: value);
+  }
+
+  Future<void> setGlassShadowEnabled(bool value) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool(AppConstants.prefsGlassShadowEnabled, value);
+    state = state.copyWith(glassShadowEnabled: value);
   }
 }
 

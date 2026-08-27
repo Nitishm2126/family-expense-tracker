@@ -64,11 +64,59 @@ class SettingsScreen extends ConsumerWidget {
             onTap: () => _showThresholdPicker(context, settings.budgetAlertThreshold, controller.setBudgetAlertThreshold),
           ),
           const SizedBox(height: 8),
+          const _SectionHeader(title: 'Navigation Bar Appearance'),
+          _SettingsTile(
+            icon: Icons.opacity_rounded,
+            title: 'Glass Transparency',
+            subtitle: '${(settings.glassTransparency * 100).toStringAsFixed(0)}%',
+            onTap: () => _showSliderPicker(
+              context,
+              'Glass Transparency',
+              settings.glassTransparency,
+              0.0,
+              1.0,
+              100,
+              controller.setGlassTransparency,
+            ),
+          ),
+          _SettingsTile(
+            icon: Icons.blur_on_rounded,
+            title: 'Glass Blur',
+            subtitle: settings.glassBlur.toStringAsFixed(0),
+            onTap: () => _showSliderPicker(
+              context,
+              'Glass Blur',
+              settings.glassBlur,
+              0.0,
+              30.0,
+              30,
+              controller.setGlassBlur,
+            ),
+          ),
+          _SettingsTile(
+            icon: Icons.border_outer_rounded,
+            title: 'Glass Border',
+            trailing: Switch(
+              value: settings.glassBorderEnabled,
+              activeThumbColor: AppColors.primary,
+              onChanged: controller.setGlassBorderEnabled,
+            ),
+          ),
+          _SettingsTile(
+            icon: Icons.layers_rounded,
+            title: 'Glass Shadow',
+            trailing: Switch(
+              value: settings.glassShadowEnabled,
+              activeThumbColor: AppColors.primary,
+              onChanged: controller.setGlassShadowEnabled,
+            ),
+          ),
+          const SizedBox(height: 8),
           const _SectionHeader(title: 'Data'),
           _SettingsTile(
             icon: Icons.backup_outlined,
             title: 'Backup & Restore',
-            subtitle: 'Your data is automatically backed up to Google Sheets',
+            subtitle: 'Your data is securely backed up to Supabase',
             onTap: () {},
           ),
           _SettingsTile(
@@ -176,6 +224,40 @@ class SettingsScreen extends ConsumerWidget {
                 },
               ),
             ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  void _showSliderPicker(BuildContext context, String title, double current, double min, double max, int divisions, ValueChanged<double> onSelected) {
+    double value = current;
+    showModalBottomSheet(
+      context: context,
+      builder: (context) => StatefulBuilder(
+        builder: (context, setState) => Padding(
+          padding: const EdgeInsets.all(20),
+          child: Column(
+             mainAxisSize: MainAxisSize.min,
+             children: [
+               Text(title, style: AppTextStyles.title(Theme.of(context).colorScheme.onSurface)),
+               const SizedBox(height: 16),
+               Slider(
+                 value: value,
+                 min: min,
+                 max: max,
+                 divisions: divisions,
+                 activeColor: AppColors.primary,
+                 onChanged: (v) {
+                   setState(() => value = v);
+                   onSelected(v);
+                 },
+               ),
+               PrimaryButton(
+                 label: 'Close',
+                 onPressed: () => Navigator.pop(context),
+               ),
+             ],
           ),
         ),
       ),

@@ -25,6 +25,8 @@ class AppConstants {
     'Entertainment',
     'Shopping',
     'Rent',
+    'Recharge',
+    'Petrol',
     'Others',
   ];
 
@@ -59,6 +61,11 @@ class AppConstants {
   static const String prefsThemeMode = 'theme_mode';
   static const String prefsReminderEnabled = 'reminder_enabled';
   static const String prefsBudgetAlertThreshold = 'budget_alert_threshold';
+  
+  static const String prefsGlassTransparency = 'glass_transparency';
+  static const String prefsGlassBlur = 'glass_blur';
+  static const String prefsGlassBorderEnabled = 'glass_border_enabled';
+  static const String prefsGlassShadowEnabled = 'glass_shadow_enabled';
 
   // Category icon/color mapping keys are handled in app_icons.dart
 }
