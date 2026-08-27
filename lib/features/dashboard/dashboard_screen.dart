@@ -14,7 +14,7 @@ import '../../providers/income_provider.dart';
 import '../../routing/app_router.dart';
 import '../../core/widgets/app_footer.dart';
 
-import 'widgets/category_pie_chart.dart';
+import 'widgets/category_donut_chart.dart';
 import 'widgets/quick_actions_row.dart';
 
 class DashboardScreen extends ConsumerWidget {
@@ -114,7 +114,7 @@ class DashboardScreen extends ConsumerWidget {
                         color: theme.cardColor,
                         borderRadius: BorderRadius.circular(20),
                       ),
-                      child: CategoryPieChart(data: summary.categoryBreakdown),
+                      child: CategoryDonutChart(data: summary.categoryBreakdown),
                     ),
                     const SizedBox(height: 24),
                   ],

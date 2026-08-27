@@ -8,7 +8,7 @@ import '../../core/constants/app_constants.dart';
 import '../../providers/expense_provider.dart';
 import '../../providers/income_provider.dart';
 import '../../routing/app_router.dart';
-import '../dashboard/widgets/category_pie_chart.dart';
+import '../dashboard/widgets/category_donut_chart.dart';
 import 'widgets/date_range_selector.dart';
 import '../../core/widgets/app_footer.dart';
 
@@ -130,7 +130,7 @@ class _ReportsScreenState extends ConsumerState<ReportsScreen> {
             Container(
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(color: theme.cardColor, borderRadius: BorderRadius.circular(20)),
-              child: CategoryPieChart(data: categoryBreakdown),
+              child: CategoryDonutChart(data: categoryBreakdown),
             ),
             const SizedBox(height: 24),
           ],
